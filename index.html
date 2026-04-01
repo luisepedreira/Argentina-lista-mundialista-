@@ -14,25 +14,19 @@
     .hsub{color:#B2DFDB;font-size:12px}
     .bback{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px}
     .bubble{padding:0 12px 12px}
-    .bubble-i{background:#fff;border-radius:18px 18px 18px 4px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.12);font-size:14px;color:#111;display:inline-block;max-width:90%;line-height:1.6}
+    .bubble-i{background:#fff;border-radius:18px 18px 18px 4px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.12);font-size:14px;color:#111;display:inline-block;max-width:92%;line-height:1.6}
     .bverde{width:100%;padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:24px;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
     .bverde:disabled{background:#ccc;cursor:default}
     .boutline{width:100%;padding:14px;background:#fff;border:2px solid #128C7E;border-radius:24px;color:#128C7E;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px}
     .screen{display:none;flex-direction:column;flex:1}
     .screen.active{display:flex}
     input{font-family:inherit}
-
-    /* Loading */
     .loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#128C7E;font-weight:700}
     .spinner{width:40px;height:40px;border:4px solid #B2DFDB;border-top-color:#128C7E;border-radius:50%;animation:spin 0.8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* Formación */
     .pcard{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between}
     .bcnt{width:34px;height:34px;border-radius:50%;border:2px solid;background:#fff;font-size:20px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center}
     .total-box{border-radius:12px;padding:14px 16px;text-align:center;font-weight:700;font-size:17px;margin-bottom:14px}
-
-    /* Selección */
     .cupos-bar{background:#075E54;padding:8px 12px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .cupos-bar::-webkit-scrollbar{display:none}
     .cbtn{border-radius:20px;padding:5px 13px;font-size:12px;color:#fff;white-space:nowrap;cursor:pointer;border:1px solid rgba(255,255,255,0.3);flex-shrink:0;background:rgba(255,255,255,0.12)}
@@ -49,8 +43,6 @@
     .jav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid}
     .pie{padding:12px 16px;background:#fff;border-top:1px solid #eee}
     .ftxt{font-size:12px;color:#666;text-align:center;margin-bottom:8px;min-height:18px}
-
-    /* Resultados */
     .mbar{background:#075E54;padding:10px 12px;display:flex;gap:8px}
     .mbtn{flex:1;padding:8px;border-radius:20px;border:none;color:#fff;cursor:pointer;font-size:13px;background:rgba(255,255,255,0.15)}
     .mbtn.active{background:#25D366;font-weight:700}
@@ -64,19 +56,18 @@
     .empty{text-align:center;padding:40px 20px;color:#999}
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
     .toast.show{opacity:1}
-    .sync-badge{font-size:11px;background:rgba(255,255,255,0.2);border-radius:10px;padding:2px 8px;color:#fff;margin-left:auto;flex-shrink:0}
   </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- LOADING GLOBAL -->
+  <!-- LOADING -->
   <div id="s-loading" class="screen active" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Cargando...</div></div></div>
     <div class="loading"><div class="spinner"></div><div>Cargando votación...</div></div>
   </div>
 
-  <!-- BIENVENIDA / RETORNO -->
+  <!-- INICIO / RETORNO -->
   <div id="s-inicio" class="screen" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub" id="inicio-sub">Armá tu lista de 26</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:20px 0">
@@ -85,11 +76,11 @@
     </div>
   </div>
 
-  <!-- NOMBRE (solo para nuevos) -->
+  <!-- NOMBRE -->
   <div id="s-nombre" class="screen" style="flex-direction:column">
     <div class="header"><button class="bback" onclick="mostrar('inicio')">←</button><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Ingresá tu nombre</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:20px 0">
-      <div class="bubble"><div class="bubble-i">¿Cómo te llamás? Así guardamos tu voto y lo podemos identificar.</div></div>
+      <div class="bubble"><div class="bubble-i">¿Cómo te llamás? Así guardamos tu voto.</div></div>
       <div style="padding:0 12px">
         <input id="inp-nombre" type="text" placeholder="Tu nombre..." autocomplete="off"
           style="width:100%;padding:14px 16px;border-radius:24px;border:none;font-size:15px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);margin-bottom:10px"/>
@@ -100,7 +91,7 @@
 
   <!-- FORMACIÓN -->
   <div id="s-formacion" class="screen" style="flex-direction:column">
-    <div class="header"><button class="bback" id="btn-back-form" onclick="volverDesdeFormacion()">←</button><div class="hav">🇦🇷</div><div><div class="htitle" id="form-titulo">Tu formación</div><div class="hsub">Paso 1: Definí tu formación</div></div></div>
+    <div class="header"><button class="bback" onclick="volverDesdeFormacion()">←</button><div class="hav">🇦🇷</div><div><div class="htitle" id="form-titulo">Tu formación</div><div class="hsub">Paso 1: Definí tu formación</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:16px 0">
       <div class="bubble"><div class="bubble-i">Elegí <strong>cuántos jugadores</strong> querés por puesto.<br>Sin restricciones — solo que el total sea exactamente <strong>26</strong>.</div></div>
       <div style="padding:0 12px">
@@ -145,7 +136,7 @@
       <button class="bback" onclick="volverDeResultados()">←</button>
       <div class="hav">🇦🇷</div>
       <div style="flex:1"><div class="htitle">Resultados globales</div><div class="hsub" id="res-sub"></div></div>
-      <button onclick="recargarVotos()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer" title="Actualizar">↻</button>
+      <button onclick="recargarVotos(true)" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 8px">↻</button>
     </div>
     <div class="mbar">
       <button class="mbtn active" id="btn-libre" onclick="setModo('libre')">🏆 Top 26 libre</button>
@@ -159,11 +150,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// CONFIGURACIÓN — pegá aquí tu URL de Google Apps Script
-// ══════════════════════════════════════════════════════
-const API_URL = "PEGAR_URL_ACA";
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — completá estos 2 valores con los de JSONBin
+// ══════════════════════════════════════════════════════════════════
+const JSONBIN_API_KEY = "P$2a$10$1Oma1IxVY/B7XcQWWVNjNerGbEje/3DCRIfPAIyli54TIh1Ejr1sG";   // tu X-Master-Key
+const JSONBIN_BIN_ID  = "69cd60a736566621a86dced1";    // el ID del bin
+// ══════════════════════════════════════════════════════════════════
 
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",    p:"Arquero",   c:"Aston Villa"},
@@ -256,6 +248,8 @@ const PC = {Arquero:"#FFD700",Defensor:"#4CAF50",Volante:"#2196F3",Delantero:"#F
 const PE = {Arquero:"🧤",Defensor:"🛡️",Volante:"⚙️",Delantero:"⚽"};
 const JM = Object.fromEntries(JUGADORES.map(j=>[j.id,j]));
 const SK_NOMBRE = "arg_mundial_nombre";
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const HEADERS = {"Content-Type":"application/json","X-Master-Key":JSONBIN_API_KEY,"X-Bin-Versioning":"false"};
 
 // ── ESTADO ────────────────────────────────────────────────────────
 let nombre = "";
@@ -264,31 +258,33 @@ let seleccion = [];
 let filtroActivo = "Todos";
 let modoRes = "libre";
 let votos = [];
-let pantallaAnterior = "inicio";
 
-// ── API ───────────────────────────────────────────────────────────
-async function apiGet() {
-  const r = await fetch(API_URL + "?action=getVotos");
+// ── API JSONBin ───────────────────────────────────────────────────
+async function apiLeer() {
+  const r = await fetch(JSONBIN_URL, {headers: HEADERS});
+  if (!r.ok) throw new Error("Error leyendo datos");
   const d = await r.json();
-  if (!d.ok) throw new Error(d.error);
-  return d.votos;
+  return d.record.votos || [];
 }
-async function apiSave(nom, sel, form) {
-  const r = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({action:"saveVoto", nombre:nom, seleccion:sel, formacion:form})
+
+async function apiGuardar(nuevosVotos) {
+  const r = await fetch(JSONBIN_URL, {
+    method: "PUT",
+    headers: HEADERS,
+    body: JSON.stringify({votos: nuevosVotos})
   });
-  const d = await r.json();
-  if (!d.ok) throw new Error(d.error);
-  return d.votos;
+  if (!r.ok) throw new Error("Error guardando datos");
+  return nuevosVotos;
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
 function toast(msg) {
+  clearTimeout(toastTimer);
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
 }
 
 // ── NAVEGACIÓN ────────────────────────────────────────────────────
@@ -297,22 +293,20 @@ function mostrar(s) {
   document.getElementById('s-'+s).classList.add('active');
 }
 
-// ── INICIO: carga y decide pantalla ───────────────────────────────
+// ── INICIO ────────────────────────────────────────────────────────
 async function iniciar() {
   mostrar('loading');
   try {
-    votos = await apiGet();
+    votos = await apiLeer();
   } catch(e) {
     votos = [];
-    toast("⚠️ Sin conexión — modo offline");
+    toast("⚠️ Sin conexión al servidor");
   }
-
   const nomGuardado = localStorage.getItem(SK_NOMBRE);
   if (nomGuardado) {
     nombre = nomGuardado;
-    const miVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    const miVoto = votos.find(v => v.nombre.toLowerCase() === nombre.toLowerCase());
     if (miVoto) {
-      // Ya votó → pantalla de retorno con resultados
       formacion = {...miVoto.formacion};
       seleccion = [...miVoto.seleccion];
       renderInicioBienvenida(miVoto);
@@ -320,7 +314,6 @@ async function iniciar() {
       return;
     }
   }
-  // Nunca votó → pantalla de inicio normal
   renderInicioNuevo();
   mostrar('inicio');
 }
@@ -335,7 +328,7 @@ function renderInicioNuevo() {
     Podés votar las veces que quieras; tu última lista reemplaza la anterior.
   `;
   document.getElementById('inicio-acciones').innerHTML = `
-    <button class="bverde" onclick="mostrar('nombre')">Votar →</button>
+    <button class="bverde" onclick="mostrar('nombre')">Votar 🗳️</button>
     <button class="boutline" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
   `;
 }
@@ -346,40 +339,51 @@ function renderInicioBienvenida(miVoto) {
   document.getElementById('inicio-bubble').innerHTML = `
     <span style="font-size:28px">👋</span><br><br>
     ¡Bienvenido de vuelta, <strong>${nombre}</strong>!<br><br>
-    Ya tenés tu lista guardada del <strong>${fecha}</strong>.<br><br>
+    Ya votaste el <strong>${fecha}</strong>.<br><br>
     Formación: ${PUESTOS.filter(p=>miVoto.formacion[p]>0).map(p=>`${miVoto.formacion[p]} ${PE[p]}`).join(' ')}<br><br>
     ¿Qué querés hacer?
   `;
   document.getElementById('inicio-acciones').innerHTML = `
     <button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
-    <button class="boutline" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>
-    <button class="boutline" style="margin-top:10px" onclick="verMiLista()">👁️ Ver mi lista actual</button>
+    <button class="boutline" onclick="verMiLista()">👁️ Ver mi lista actual</button>
+    <button class="boutline" style="margin-top:10px" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>
   `;
 }
 
 function verMiLista() {
-  pantallaAnterior = 'inicio';
-  renderConfirmacion();
+  renderConfirmacion(false);
   mostrar('confirmacion');
 }
 
 function cambiarVoto() {
-  formacion = {...(votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase())?.formacion || {Arquero:3,Defensor:8,Volante:8,Delantero:7})};
   seleccion = [];
   document.getElementById('form-titulo').textContent = 'Hola, ' + nombre + '!';
   renderFormacion();
   mostrar('formacion');
 }
 
-async function recargarVotos() {
-  toast("Actualizando...");
+async function recargarVotos(conToast) {
+  if (conToast) toast("Actualizando...");
   try {
-    votos = await apiGet();
+    votos = await apiLeer();
     renderResultados();
-    toast("✅ Actualizado");
+    if (conToast) toast("✅ Actualizado");
   } catch(e) {
-    toast("⚠️ Error al actualizar");
+    if (conToast) toast("⚠️ Error al actualizar");
   }
+}
+
+function volverDesdeFormacion() {
+  const miVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+  if (miVoto) renderInicioBienvenida(miVoto);
+  else renderInicioNuevo();
+  mostrar('inicio');
+}
+
+function volverDeResultados() {
+  const miVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+  if (miVoto) { renderInicioBienvenida(miVoto); mostrar('inicio'); }
+  else { renderInicioNuevo(); mostrar('inicio'); }
 }
 
 // ── NOMBRE ────────────────────────────────────────────────────────
@@ -387,7 +391,7 @@ document.getElementById('inp-nombre').addEventListener('input', function(){
   document.getElementById('btn-empezar').disabled = !this.value.trim();
 });
 document.getElementById('inp-nombre').addEventListener('keydown', function(e){
-  if(e.key==='Enter'&&this.value.trim()) empezar();
+  if (e.key==='Enter' && this.value.trim()) empezar();
 });
 function empezar() {
   nombre = document.getElementById('inp-nombre').value.trim();
@@ -397,21 +401,16 @@ function empezar() {
   if (prev) { formacion={...prev.formacion}; seleccion=[...prev.seleccion]; }
   else { formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7}; seleccion=[]; }
   document.getElementById('form-titulo').textContent = 'Hola, ' + nombre + '!';
+  seleccion = [];
   renderFormacion();
   mostrar('formacion');
-}
-
-function volverDesdeFormacion() {
-  const prev = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if (prev) { renderInicioBienvenida(prev); } else { renderInicioNuevo(); }
-  mostrar('inicio');
 }
 
 // ── FORMACIÓN ─────────────────────────────────────────────────────
 function renderFormacion() {
   const total = Object.values(formacion).reduce((a,b)=>a+b,0);
-  const valid = total===26;
-  document.getElementById('puestos-cards').innerHTML = PUESTOS.map(p=>{
+  const valid = total === 26;
+  document.getElementById('puestos-cards').innerHTML = PUESTOS.map(p => {
     const val = formacion[p];
     return `<div class="pcard" style="border-left:4px solid ${PC[p]}">
       <div style="display:flex;align-items:center;gap:8px">
@@ -431,7 +430,7 @@ function renderFormacion() {
   const ex=total>26?`<div style="font-size:12px;font-weight:400;color:#C62828;margin-top:4px">Reducí ${total-26} jugador${total-26!==1?'es':''}</div>`:'';
   document.getElementById('total-box').style.cssText=`background:${bg};border:2px solid ${bc}`;
   document.getElementById('total-box').innerHTML=`Total: <span style="font-size:24px;color:${nc}">${total}</span> / 26 ${valid?'✅':''}${ex}`;
-  document.getElementById('btn-ir-sel').disabled=!valid;
+  document.getElementById('btn-ir-sel').disabled = !valid;
 }
 function cambiarP(p,d){ formacion[p]=Math.max(0,formacion[p]+d); renderFormacion(); }
 
@@ -504,8 +503,8 @@ function renderJugadores(){
 function toggleJ(id){
   const j=JM[id]; if(!j)return;
   const c=getConteos();
-  if(seleccion.includes(id)){seleccion=seleccion.filter(x=>x!==id);}
-  else{
+  if(seleccion.includes(id)){ seleccion=seleccion.filter(x=>x!==id); }
+  else {
     if(formacion[j.p]===0||c[j.p]>=formacion[j.p])return;
     if(seleccion.length>=26)return;
     seleccion.push(id);
@@ -525,9 +524,14 @@ async function confirmar(){
   if(!isValid())return;
   mostrar('guardando');
   try {
-    votos = await apiSave(nombre, seleccion, formacion);
+    // Leer los votos más recientes antes de guardar (evita sobreescribir votos de otros)
+    const votosActuales = await apiLeer();
+    const idx = votosActuales.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    const entry = {nombre, seleccion:[...seleccion], formacion:{...formacion}, fecha:new Date().toISOString()};
+    if(idx>=0) votosActuales[idx]=entry; else votosActuales.push(entry);
+    votos = await apiGuardar(votosActuales);
     localStorage.setItem(SK_NOMBRE, nombre);
-    renderConfirmacion();
+    renderConfirmacion(true);
     mostrar('confirmacion');
   } catch(e) {
     toast("⚠️ Error al guardar. Revisá tu conexión.");
@@ -536,11 +540,12 @@ async function confirmar(){
 }
 
 // ── CONFIRMACIÓN ──────────────────────────────────────────────────
-function renderConfirmacion(){
-  document.getElementById('conf-sub').textContent=nombre;
+function renderConfirmacion(recienVoto){
+  document.getElementById('conf-sub').textContent = nombre;
   const form=PUESTOS.filter(p=>formacion[p]>0).map(p=>`${formacion[p]} ${p}${formacion[p]>1&&p!=='Arquero'?'s':''}`).join(' · ');
-  const fecha=new Date().toLocaleString('es-AR');
-  document.getElementById('conf-bubble').innerHTML=`<span style="font-size:32px">🎉</span><br><br><strong>¡Tu lista fue guardada, ${nombre}!</strong><br><br>${form}<br><span style="color:#888;font-size:12px">🕒 ${fecha}</span>`;
+  const titulo = recienVoto ? '¡Tu lista fue guardada!' : 'Tu lista actual';
+  const emoji = recienVoto ? '🎉' : '📋';
+  document.getElementById('conf-bubble').innerHTML=`<span style="font-size:32px">${emoji}</span><br><br><strong>${titulo}, ${nombre}!</strong><br><br>${form}`;
   document.getElementById('conf-lista').innerHTML=PUESTOS.map(p=>{
     const jugs=seleccion.map(id=>JM[id]).filter(j=>j&&j.p===p);
     if(!jugs.length)return'';
@@ -549,12 +554,6 @@ function renderConfirmacion(){
       ${jugs.map(j=>`<div class="conf-jug"><span>${PE[j.p]}</span><div><div style="font-weight:600;font-size:14px">${j.n}</div><div style="font-size:11px;color:#888">${j.c}</div></div></div>`).join('')}
     </div>`;
   }).join('');
-}
-
-function volverDeResultados(){
-  const prev=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if(prev){renderInicioBienvenida(prev);mostrar('inicio');}
-  else{renderInicioNuevo();mostrar('inicio');}
 }
 
 // ── RESULTADOS ────────────────────────────────────────────────────
@@ -610,7 +609,6 @@ function renderResultados(){
     }).join('');
   }).join('');
 
-  // Historial
   html+=`<div style="padding:14px 16px">
     <div style="font-weight:700;color:#128C7E;margin-bottom:8px;font-size:13px;text-transform:uppercase;letter-spacing:1px">🗳️ Todos los votos (${votos.length})</div>
     ${[...votos].reverse().map(v=>`
