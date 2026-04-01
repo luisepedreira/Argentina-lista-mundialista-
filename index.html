@@ -61,13 +61,11 @@
 <body>
 <div id="app">
 
-  <!-- LOADING -->
   <div id="s-loading" class="screen active" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Cargando...</div></div></div>
     <div class="loading"><div class="spinner"></div><div>Cargando votación...</div></div>
   </div>
 
-  <!-- INICIO / RETORNO -->
   <div id="s-inicio" class="screen" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub" id="inicio-sub">Armá tu lista de 26</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:20px 0">
@@ -76,7 +74,6 @@
     </div>
   </div>
 
-  <!-- NOMBRE -->
   <div id="s-nombre" class="screen" style="flex-direction:column">
     <div class="header"><button class="bback" onclick="mostrar('inicio')">←</button><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Ingresá tu nombre</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:20px 0">
@@ -89,7 +86,6 @@
     </div>
   </div>
 
-  <!-- FORMACIÓN -->
   <div id="s-formacion" class="screen" style="flex-direction:column">
     <div class="header"><button class="bback" onclick="volverDesdeFormacion()">←</button><div class="hav">🇦🇷</div><div><div class="htitle" id="form-titulo">Tu formación</div><div class="hsub">Paso 1: Definí tu formación</div></div></div>
     <div style="flex:1;overflow-y:auto;padding:16px 0">
@@ -102,7 +98,6 @@
     </div>
   </div>
 
-  <!-- SELECCIÓN -->
   <div id="s-seleccion" class="screen" style="flex-direction:column">
     <div class="header"><button class="bback" onclick="mostrar('formacion')">←</button><div class="hav">🇦🇷</div><div><div class="htitle">Elegí tus jugadores</div><div class="hsub" id="sel-sub">0 / 26</div></div></div>
     <div class="cupos-bar" id="cupos-bar"></div>
@@ -111,13 +106,11 @@
     <div class="pie"><div class="ftxt" id="ftxt"></div><button class="bverde" id="btn-confirmar" onclick="confirmar()">Confirmar</button></div>
   </div>
 
-  <!-- GUARDANDO -->
   <div id="s-guardando" class="screen" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Guardando...</div></div></div>
     <div class="loading"><div class="spinner"></div><div>Registrando tu voto...</div></div>
   </div>
 
-  <!-- CONFIRMACIÓN -->
   <div id="s-confirmacion" class="screen" style="flex-direction:column">
     <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">¡Voto registrado!</div><div class="hsub" id="conf-sub"></div></div></div>
     <div style="flex:1;overflow-y:auto;padding:20px 0">
@@ -130,7 +123,6 @@
     </div>
   </div>
 
-  <!-- RESULTADOS -->
   <div id="s-resultados" class="screen" style="flex-direction:column">
     <div class="header">
       <button class="bback" onclick="volverDeResultados()">←</button>
@@ -150,12 +142,40 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN — completá estos 2 valores con los de JSONBin
-// ══════════════════════════════════════════════════════════════════
-const JSONBIN_API_KEY = "$2a$10$kNySKA3zAM.8L.RIs8lBSOCFjR9Dndsd05WmmBXSZLFdDeqGtj/xS";   // tu X-Master-Key
-const JSONBIN_BIN_ID  = "69cd645136566621a86dde99";    // el ID del bin
-// ══════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// CONFIGURACIÓN — completá estos 2 valores
+// ══════════════════════════════════════════════════════
+const API_KEY = "$2a$10$kNySKA3zAM.8L.RIs8lBSOCFjR9Dndsd05WmmBXSZLFdDeqGtj/xS";   // empieza con $2b$10$...
+const BIN_ID  = "69cd645136566621a86dde99"; // tu bin ID (ya lo tengo del error)
+// ══════════════════════════════════════════════════════
+
+const BASE = "https://api.jsonbin.io/v3/b/" + BIN_ID;
+
+// Leer: bin público, sin key
+async function apiLeer() {
+  const r = await fetch(BASE + "?meta=false");
+  if (!r.ok) throw new Error("Error " + r.status);
+  const d = await r.json();
+  return Array.isArray(d.votos) ? d.votos : [];
+}
+
+// Escribir: necesita la master key
+async function apiGuardar(votosNuevos) {
+  const r = await fetch(BASE, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": API_KEY,
+      "X-Bin-Versioning": "false"
+    },
+    body: JSON.stringify({votos: votosNuevos})
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error("Error " + r.status + ": " + txt);
+  }
+  return votosNuevos;
+}
 
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",    p:"Arquero",   c:"Aston Villa"},
@@ -243,241 +263,114 @@ const JUGADORES = [
   {id:107,n:"Lautaro Blanco",       p:"Delantero", c:"Boca Juniors"},
 ];
 
-const PUESTOS = ["Arquero","Defensor","Volante","Delantero"];
-const PC = {Arquero:"#FFD700",Defensor:"#4CAF50",Volante:"#2196F3",Delantero:"#F44336"};
-const PE = {Arquero:"🧤",Defensor:"🛡️",Volante:"⚙️",Delantero:"⚽"};
-const JM = Object.fromEntries(JUGADORES.map(j=>[j.id,j]));
-const SK_NOMBRE = "arg_mundial_nombre";
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-const HEADERS = {"Content-Type":"application/json","X-Master-Key":JSONBIN_API_KEY,"X-Bin-Versioning":"false","X-Access-Key":JSONBIN_API_KEY};
+const PUESTOS=["Arquero","Defensor","Volante","Delantero"];
+const PC={Arquero:"#FFD700",Defensor:"#4CAF50",Volante:"#2196F3",Delantero:"#F44336"};
+const PE={Arquero:"🧤",Defensor:"🛡️",Volante:"⚙️",Delantero:"⚽"};
+const JM=Object.fromEntries(JUGADORES.map(j=>[j.id,j]));
+const SK="arg_mundial_nombre";
 
-// ── ESTADO ────────────────────────────────────────────────────────
-let nombre = "";
-let formacion = {Arquero:3,Defensor:8,Volante:8,Delantero:7};
-let seleccion = [];
-let filtroActivo = "Todos";
-let modoRes = "libre";
-let votos = [];
+let nombre="",formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7},seleccion=[],filtroActivo="Todos",modoRes="libre",votos=[];
 
-// ── API JSONBin ───────────────────────────────────────────────────
-async function apiLeer() {
-  const r = await fetch(JSONBIN_URL, {headers: HEADERS});
-  if (!r.ok) throw new Error("Error leyendo datos");
-  const d = await r.json();
-  return d.record.votos || [];
-}
-
-async function apiGuardar(nuevosVotos) {
-  const r = await fetch(JSONBIN_URL, {
-    method: "PUT",
-    headers: HEADERS,
-    body: JSON.stringify({votos: nuevosVotos})
-  });
-  if (!r.ok) throw new Error("Error guardando datos");
-  return nuevosVotos;
-}
-
-// ── TOAST ─────────────────────────────────────────────────────────
 let toastTimer;
-function toast(msg) {
+function toast(msg){
   clearTimeout(toastTimer);
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
-
-// ── NAVEGACIÓN ────────────────────────────────────────────────────
-function mostrar(s) {
+function mostrar(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('s-'+s).classList.add('active');
 }
 
-// ── INICIO ────────────────────────────────────────────────────────
-async function iniciar() {
+async function iniciar(){
   mostrar('loading');
-  try {
-    votos = await apiLeer();
-  } catch(e) {
-    votos = [];
-    toast("⚠️ Sin conexión al servidor");
+  try{ votos=await apiLeer(); }
+  catch(e){ votos=[]; toast("⚠️ Sin conexión — modo offline"); }
+  const nom=localStorage.getItem(SK);
+  if(nom){
+    nombre=nom;
+    const miVoto=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    if(miVoto){ formacion={...miVoto.formacion}; seleccion=[...miVoto.seleccion]; renderInicioBienvenida(miVoto); mostrar('inicio'); return; }
   }
-  const nomGuardado = localStorage.getItem(SK_NOMBRE);
-  if (nomGuardado) {
-    nombre = nomGuardado;
-    const miVoto = votos.find(v => v.nombre.toLowerCase() === nombre.toLowerCase());
-    if (miVoto) {
-      formacion = {...miVoto.formacion};
-      seleccion = [...miVoto.seleccion];
-      renderInicioBienvenida(miVoto);
-      mostrar('inicio');
-      return;
-    }
-  }
-  renderInicioNuevo();
-  mostrar('inicio');
+  renderInicioNuevo(); mostrar('inicio');
 }
 
-function renderInicioNuevo() {
-  document.getElementById('inicio-sub').textContent = "Armá tu lista de 26";
-  document.getElementById('inicio-bubble').innerHTML = `
-    <span style="font-size:28px">🇦🇷⚽</span><br><br>
-    <strong>¡Bienvenido al selector de convocados!</strong><br><br>
-    Elegí tus <strong>26 jugadores argentinos</strong> para el Mundial 2026.<br>
-    Definís cuántos por puesto — solo tienen que sumar 26.<br><br>
-    Podés votar las veces que quieras; tu última lista reemplaza la anterior.
-  `;
-  document.getElementById('inicio-acciones').innerHTML = `
-    <button class="bverde" onclick="mostrar('nombre')">Votar 🗳️</button>
-    <button class="boutline" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
-  `;
+function renderInicioNuevo(){
+  document.getElementById('inicio-sub').textContent="Armá tu lista de 26";
+  document.getElementById('inicio-bubble').innerHTML=`<span style="font-size:28px">🇦🇷⚽</span><br><br><strong>¡Bienvenido al selector de convocados!</strong><br><br>Elegí tus <strong>26 jugadores argentinos</strong> para el Mundial 2026.<br>Definís cuántos por puesto — solo tienen que sumar 26.<br><br>Podés votar las veces que quieras; tu última lista reemplaza la anterior.`;
+  document.getElementById('inicio-acciones').innerHTML=`<button class="bverde" onclick="mostrar('nombre')">Votar 🗳️</button><button class="boutline" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>`;
 }
 
-function renderInicioBienvenida(miVoto) {
-  const fecha = new Date(miVoto.fecha).toLocaleString('es-AR');
-  document.getElementById('inicio-sub').textContent = "¡Hola, " + nombre + "!";
-  document.getElementById('inicio-bubble').innerHTML = `
-    <span style="font-size:28px">👋</span><br><br>
-    ¡Bienvenido de vuelta, <strong>${nombre}</strong>!<br><br>
-    Ya votaste el <strong>${fecha}</strong>.<br><br>
-    Formación: ${PUESTOS.filter(p=>miVoto.formacion[p]>0).map(p=>`${miVoto.formacion[p]} ${PE[p]}`).join(' ')}<br><br>
-    ¿Qué querés hacer?
-  `;
-  document.getElementById('inicio-acciones').innerHTML = `
-    <button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
-    <button class="boutline" onclick="verMiLista()">👁️ Ver mi lista actual</button>
-    <button class="boutline" style="margin-top:10px" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>
-  `;
+function renderInicioBienvenida(miVoto){
+  const fecha=new Date(miVoto.fecha).toLocaleString('es-AR');
+  document.getElementById('inicio-sub').textContent="¡Hola, "+nombre+"!";
+  document.getElementById('inicio-bubble').innerHTML=`<span style="font-size:28px">👋</span><br><br>¡Bienvenido de vuelta, <strong>${nombre}</strong>!<br><br>Ya votaste el <strong>${fecha}</strong>.<br><br>Formación: ${PUESTOS.filter(p=>miVoto.formacion[p]>0).map(p=>`${miVoto.formacion[p]} ${PE[p]}`).join(' ')}<br><br>¿Qué querés hacer?`;
+  document.getElementById('inicio-acciones').innerHTML=`<button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button><button class="boutline" onclick="verMiLista()">👁️ Ver mi lista actual</button><button class="boutline" style="margin-top:10px" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>`;
 }
 
-function verMiLista() {
-  renderConfirmacion(false);
-  mostrar('confirmacion');
+function verMiLista(){ renderConfirmacion(false); mostrar('confirmacion'); }
+function cambiarVoto(){ seleccion=[]; document.getElementById('form-titulo').textContent='Hola, '+nombre+'!'; renderFormacion(); mostrar('formacion'); }
+function volverDesdeFormacion(){ const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase()); if(m)renderInicioBienvenida(m); else renderInicioNuevo(); mostrar('inicio'); }
+function volverDeResultados(){ const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase()); if(m){renderInicioBienvenida(m);}else{renderInicioNuevo();} mostrar('inicio'); }
+
+async function recargarVotos(conToast){
+  if(conToast)toast("Actualizando...");
+  try{ votos=await apiLeer(); renderResultados(); if(conToast)toast("✅ Actualizado"); }
+  catch(e){ if(conToast)toast("⚠️ Error al actualizar"); }
 }
 
-function cambiarVoto() {
-  seleccion = [];
-  document.getElementById('form-titulo').textContent = 'Hola, ' + nombre + '!';
-  renderFormacion();
-  mostrar('formacion');
+document.getElementById('inp-nombre').addEventListener('input',function(){ document.getElementById('btn-empezar').disabled=!this.value.trim(); });
+document.getElementById('inp-nombre').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim())empezar(); });
+
+function empezar(){
+  nombre=document.getElementById('inp-nombre').value.trim(); if(!nombre)return;
+  localStorage.setItem(SK,nombre);
+  const prev=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+  if(prev){formacion={...prev.formacion};}else{formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7};}
+  seleccion=[];
+  document.getElementById('form-titulo').textContent='Hola, '+nombre+'!';
+  renderFormacion(); mostrar('formacion');
 }
 
-async function recargarVotos(conToast) {
-  if (conToast) toast("Actualizando...");
-  try {
-    votos = await apiLeer();
-    renderResultados();
-    if (conToast) toast("✅ Actualizado");
-  } catch(e) {
-    if (conToast) toast("⚠️ Error al actualizar");
-  }
-}
-
-function volverDesdeFormacion() {
-  const miVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if (miVoto) renderInicioBienvenida(miVoto);
-  else renderInicioNuevo();
-  mostrar('inicio');
-}
-
-function volverDeResultados() {
-  const miVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if (miVoto) { renderInicioBienvenida(miVoto); mostrar('inicio'); }
-  else { renderInicioNuevo(); mostrar('inicio'); }
-}
-
-// ── NOMBRE ────────────────────────────────────────────────────────
-document.getElementById('inp-nombre').addEventListener('input', function(){
-  document.getElementById('btn-empezar').disabled = !this.value.trim();
-});
-document.getElementById('inp-nombre').addEventListener('keydown', function(e){
-  if (e.key==='Enter' && this.value.trim()) empezar();
-});
-function empezar() {
-  nombre = document.getElementById('inp-nombre').value.trim();
-  if (!nombre) return;
-  localStorage.setItem(SK_NOMBRE, nombre);
-  const prev = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if (prev) { formacion={...prev.formacion}; seleccion=[...prev.seleccion]; }
-  else { formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7}; seleccion=[]; }
-  document.getElementById('form-titulo').textContent = 'Hola, ' + nombre + '!';
-  seleccion = [];
-  renderFormacion();
-  mostrar('formacion');
-}
-
-// ── FORMACIÓN ─────────────────────────────────────────────────────
-function renderFormacion() {
-  const total = Object.values(formacion).reduce((a,b)=>a+b,0);
-  const valid = total === 26;
-  document.getElementById('puestos-cards').innerHTML = PUESTOS.map(p => {
-    const val = formacion[p];
-    return `<div class="pcard" style="border-left:4px solid ${PC[p]}">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:22px">${PE[p]}</span>
-        <strong style="color:${PC[p]};font-size:16px">${p}s</strong>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px">
-        <button class="bcnt" onclick="cambiarP('${p}',-1)" ${val===0?'disabled':''} style="color:${val===0?'#ccc':PC[p]};border-color:${val===0?'#eee':PC[p]}">−</button>
-        <span style="font-size:26px;font-weight:800;color:${PC[p]};min-width:30px;text-align:center">${val}</span>
-        <button class="bcnt" onclick="cambiarP('${p}',1)" style="color:${PC[p]};border-color:${PC[p]}">+</button>
-      </div>
-    </div>`;
+function renderFormacion(){
+  const total=Object.values(formacion).reduce((a,b)=>a+b,0),valid=total===26;
+  document.getElementById('puestos-cards').innerHTML=PUESTOS.map(p=>{
+    const val=formacion[p];
+    return`<div class="pcard" style="border-left:4px solid ${PC[p]}"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">${PE[p]}</span><strong style="color:${PC[p]};font-size:16px">${p}s</strong></div><div style="display:flex;align-items:center;gap:14px"><button class="bcnt" onclick="cambiarP('${p}',-1)" ${val===0?'disabled':''} style="color:${val===0?'#ccc':PC[p]};border-color:${val===0?'#eee':PC[p]}">−</button><span style="font-size:26px;font-weight:800;color:${PC[p]};min-width:30px;text-align:center">${val}</span><button class="bcnt" onclick="cambiarP('${p}',1)" style="color:${PC[p]};border-color:${PC[p]}">+</button></div></div>`;
   }).join('');
-  const bg=valid?'#E8F5E9':total>26?'#FFEBEE':'#FFF3E0';
-  const bc=valid?'#4CAF50':total>26?'#F44336':'#FF9800';
-  const nc=valid?'#2E7D32':total>26?'#C62828':'#E65100';
+  const bg=valid?'#E8F5E9':total>26?'#FFEBEE':'#FFF3E0',bc=valid?'#4CAF50':total>26?'#F44336':'#FF9800',nc=valid?'#2E7D32':total>26?'#C62828':'#E65100';
   const ex=total>26?`<div style="font-size:12px;font-weight:400;color:#C62828;margin-top:4px">Reducí ${total-26} jugador${total-26!==1?'es':''}</div>`:'';
   document.getElementById('total-box').style.cssText=`background:${bg};border:2px solid ${bc}`;
   document.getElementById('total-box').innerHTML=`Total: <span style="font-size:24px;color:${nc}">${total}</span> / 26 ${valid?'✅':''}${ex}`;
-  document.getElementById('btn-ir-sel').disabled = !valid;
+  document.getElementById('btn-ir-sel').disabled=!valid;
 }
-function cambiarP(p,d){ formacion[p]=Math.max(0,formacion[p]+d); renderFormacion(); }
+function cambiarP(p,d){formacion[p]=Math.max(0,formacion[p]+d);renderFormacion();}
 
 function irASeleccion(){
-  seleccion=[];
-  filtroActivo="Todos";
+  seleccion=[];filtroActivo="Todos";
   document.getElementById('inp-busq').value='';
   document.getElementById('btn-clear').style.display='none';
-  renderCupos(); renderJugadores(); actualizarPie();
-  mostrar('seleccion');
+  renderCupos();renderJugadores();actualizarPie();mostrar('seleccion');
 }
 
-// ── SELECCIÓN ─────────────────────────────────────────────────────
-function getConteos(){
-  const c={Arquero:0,Defensor:0,Volante:0,Delantero:0};
-  seleccion.forEach(id=>{if(JM[id])c[JM[id].p]++;});
-  return c;
-}
-function isValid(){
-  if(seleccion.length!==26)return false;
-  const c=getConteos();
-  return PUESTOS.every(p=>c[p]===formacion[p]);
-}
+function getConteos(){const c={Arquero:0,Defensor:0,Volante:0,Delantero:0};seleccion.forEach(id=>{if(JM[id])c[JM[id].p]++;});return c;}
+function isValid(){if(seleccion.length!==26)return false;const c=getConteos();return PUESTOS.every(p=>c[p]===formacion[p]);}
+
 function renderCupos(){
   const c=getConteos();
   document.getElementById('sel-sub').textContent=`${seleccion.length} / 26 seleccionados`;
   document.getElementById('cupos-bar').innerHTML=[
     `<button class="cbtn ${filtroActivo==='Todos'?'active':''}" onclick="setF('Todos')">🌟 Todos</button>`,
-    ...PUESTOS.map(p=>{
-      const ll=c[p]===formacion[p];
-      return `<button class="cbtn ${filtroActivo===p?'active':''}" onclick="setF('${p}')" style="${ll?`background:${PC[p]};border-color:${PC[p]}`:''}">
-        ${PE[p]} ${c[p]}/${formacion[p]}
-      </button>`;
-    })
+    ...PUESTOS.map(p=>{const ll=c[p]===formacion[p];return`<button class="cbtn ${filtroActivo===p?'active':''}" onclick="setF('${p}')" style="${ll?`background:${PC[p]};border-color:${PC[p]}`:''}"> ${PE[p]} ${c[p]}/${formacion[p]}</button>`;})
   ].join('');
 }
-function setF(f){ filtroActivo=f; renderCupos(); renderJugadores(); }
-function filtrarJ(){
-  const v=document.getElementById('inp-busq').value;
-  document.getElementById('btn-clear').style.display=v?'block':'none';
-  if(v) filtroActivo='Todos';
-  renderCupos(); renderJugadores();
-}
-function limpiarBusq(){ document.getElementById('inp-busq').value=''; document.getElementById('btn-clear').style.display='none'; renderJugadores(); }
+function setF(f){filtroActivo=f;renderCupos();renderJugadores();}
+function filtrarJ(){const v=document.getElementById('inp-busq').value;document.getElementById('btn-clear').style.display=v?'block':'none';if(v)filtroActivo='Todos';renderCupos();renderJugadores();}
+function limpiarBusq(){document.getElementById('inp-busq').value='';document.getElementById('btn-clear').style.display='none';renderJugadores();}
+
 function renderJugadores(){
-  const busq=document.getElementById('inp-busq').value.toLowerCase();
-  const c=getConteos();
+  const busq=document.getElementById('inp-busq').value.toLowerCase(),c=getConteos();
   const lista=JUGADORES.filter(j=>{
     if(filtroActivo!=='Todos'&&j.p!==filtroActivo)return false;
     if(!busq)return true;
@@ -485,34 +378,21 @@ function renderJugadores(){
   });
   if(!lista.length){document.getElementById('jlist').innerHTML='<div class="empty"><div style="font-size:40px">🔎</div><div style="margin-top:8px">Sin coincidencias</div></div>';return;}
   document.getElementById('jlist').innerHTML=lista.map(j=>{
-    const sel=seleccion.includes(j.id);
-    const bloq=!sel&&(c[j.p]>=formacion[j.p]||formacion[j.p]===0);
-    return `<div class="jitem ${sel?'sel':''} ${bloq?'bloq':''}" onclick="toggleJ(${j.id})">
-      <div class="jav" style="background:${PC[j.p]}18;border-color:${sel?'#25D366':PC[j.p]}">${PE[j.p]}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:${sel?700:500};font-size:15px;color:${sel?'#1B5E20':'#111'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.n}</div>
-        <div style="font-size:12px;color:#888">${j.c}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <span style="padding:2px 8px;border-radius:10px;font-size:11px;background:${PC[j.p]}22;color:${PC[j.p]};font-weight:700">${j.p}</span>
-        ${sel?'<span style="font-size:18px">✅</span>':''}
-      </div>
-    </div>`;
+    const sel=seleccion.includes(j.id),bloq=!sel&&(c[j.p]>=formacion[j.p]||formacion[j.p]===0);
+    return`<div class="jitem ${sel?'sel':''} ${bloq?'bloq':''}" onclick="toggleJ(${j.id})"><div class="jav" style="background:${PC[j.p]}18;border-color:${sel?'#25D366':PC[j.p]}">${PE[j.p]}</div><div style="flex:1;min-width:0"><div style="font-weight:${sel?700:500};font-size:15px;color:${sel?'#1B5E20':'#111'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.n}</div><div style="font-size:12px;color:#888">${j.c}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="padding:2px 8px;border-radius:10px;font-size:11px;background:${PC[j.p]}22;color:${PC[j.p]};font-weight:700">${j.p}</span>${sel?'<span style="font-size:18px">✅</span>':''}</div></div>`;
   }).join('');
 }
+
 function toggleJ(id){
-  const j=JM[id]; if(!j)return;
+  const j=JM[id];if(!j)return;
   const c=getConteos();
-  if(seleccion.includes(id)){ seleccion=seleccion.filter(x=>x!==id); }
-  else {
-    if(formacion[j.p]===0||c[j.p]>=formacion[j.p])return;
-    if(seleccion.length>=26)return;
-    seleccion.push(id);
-  }
-  renderCupos(); renderJugadores(); actualizarPie();
+  if(seleccion.includes(id)){seleccion=seleccion.filter(x=>x!==id);}
+  else{if(formacion[j.p]===0||c[j.p]>=formacion[j.p])return;if(seleccion.length>=26)return;seleccion.push(id);}
+  renderCupos();renderJugadores();actualizarPie();
 }
+
 function actualizarPie(){
-  const c=getConteos(); const total=seleccion.length; const valid=isValid();
+  const c=getConteos(),total=seleccion.length,valid=isValid();
   const faltan=PUESTOS.filter(p=>c[p]<formacion[p]).map(p=>`${formacion[p]-c[p]} ${PE[p]}`).join('  ');
   document.getElementById('ftxt').textContent=(!valid&&faltan)?'Faltan: '+faltan:'';
   const btn=document.getElementById('btn-confirmar');
@@ -523,106 +403,70 @@ function actualizarPie(){
 async function confirmar(){
   if(!isValid())return;
   mostrar('guardando');
-  try {
-    // Leer los votos más recientes antes de guardar (evita sobreescribir votos de otros)
-    const votosActuales = await apiLeer();
-    const idx = votosActuales.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    const entry = {nombre, seleccion:[...seleccion], formacion:{...formacion}, fecha:new Date().toISOString()};
-    if(idx>=0) votosActuales[idx]=entry; else votosActuales.push(entry);
-    votos = await apiGuardar(votosActuales);
-    localStorage.setItem(SK_NOMBRE, nombre);
+  try{
+    const actuales=await apiLeer();
+    const idx=actuales.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    const entry={nombre,seleccion:[...seleccion],formacion:{...formacion},fecha:new Date().toISOString()};
+    if(idx>=0)actuales[idx]=entry;else actuales.push(entry);
+    votos=await apiGuardar(actuales);
+    localStorage.setItem(SK,nombre);
     renderConfirmacion(true);
     mostrar('confirmacion');
-  } catch(e) {
-    toast("⚠️ Error al guardar. Revisá tu conexión.");
+  }catch(e){
+    console.error(e);
+    toast("⚠️ Error al guardar: "+e.message);
     mostrar('seleccion');
   }
 }
 
-// ── CONFIRMACIÓN ──────────────────────────────────────────────────
 function renderConfirmacion(recienVoto){
-  document.getElementById('conf-sub').textContent = nombre;
+  document.getElementById('conf-sub').textContent=nombre;
   const form=PUESTOS.filter(p=>formacion[p]>0).map(p=>`${formacion[p]} ${p}${formacion[p]>1&&p!=='Arquero'?'s':''}`).join(' · ');
-  const titulo = recienVoto ? '¡Tu lista fue guardada!' : 'Tu lista actual';
-  const emoji = recienVoto ? '🎉' : '📋';
+  const titulo=recienVoto?'¡Tu lista fue guardada!':'Tu lista actual';
+  const emoji=recienVoto?'🎉':'📋';
   document.getElementById('conf-bubble').innerHTML=`<span style="font-size:32px">${emoji}</span><br><br><strong>${titulo}, ${nombre}!</strong><br><br>${form}`;
   document.getElementById('conf-lista').innerHTML=PUESTOS.map(p=>{
     const jugs=seleccion.map(id=>JM[id]).filter(j=>j&&j.p===p);
     if(!jugs.length)return'';
-    return`<div style="margin-bottom:10px">
-      <div style="font-weight:700;color:${PC[p]};padding:6px 4px;font-size:13px">${PE[p]} ${p}s (${jugs.length})</div>
-      ${jugs.map(j=>`<div class="conf-jug"><span>${PE[j.p]}</span><div><div style="font-weight:600;font-size:14px">${j.n}</div><div style="font-size:11px;color:#888">${j.c}</div></div></div>`).join('')}
-    </div>`;
+    return`<div style="margin-bottom:10px"><div style="font-weight:700;color:${PC[p]};padding:6px 4px;font-size:13px">${PE[p]} ${p}s (${jugs.length})</div>${jugs.map(j=>`<div class="conf-jug"><span>${PE[j.p]}</span><div><div style="font-weight:600;font-size:14px">${j.n}</div><div style="font-size:11px;color:#888">${j.c}</div></div></div>`).join('')}</div>`;
   }).join('');
 }
 
-// ── RESULTADOS ────────────────────────────────────────────────────
 function setModo(m){
   modoRes=m;
   document.getElementById('btn-libre').classList.toggle('active',m==='libre');
   document.getElementById('btn-mform').classList.toggle('active',m==='formacion');
   renderResultados();
 }
+
 function renderResultados(){
   document.getElementById('res-sub').textContent=`${votos.length} votante${votos.length!==1?'s':''}`;
-  if(!votos.length){
-    document.getElementById('res-contenido').innerHTML='<div class="empty"><div style="font-size:40px">🗳️</div><div style="margin-top:8px">Todavía no hay votos</div></div>';
-    return;
-  }
+  if(!votos.length){document.getElementById('res-contenido').innerHTML='<div class="empty"><div style="font-size:40px">🗳️</div><div style="margin-top:8px">Todavía no hay votos</div></div>';return;}
   const vj={};
   votos.forEach(v=>v.seleccion.forEach(id=>{vj[id]=(vj[id]||0)+1;}));
   const fr={};
-  PUESTOS.forEach(p=>{
-    const vals=votos.map(v=>v.formacion[p]).sort((a,b)=>a-b);
-    fr[p]=vals[Math.floor(vals.length/2)]||0;
-  });
+  PUESTOS.forEach(p=>{const vals=votos.map(v=>v.formacion[p]).sort((a,b)=>a-b);fr[p]=vals[Math.floor(vals.length/2)]||0;});
   let diff=26-Object.values(fr).reduce((a,b)=>a+b,0);
-  if(diff!==0) fr[diff>0?'Delantero':'Defensor']+=diff;
-
+  if(diff!==0)fr[diff>0?'Delantero':'Defensor']+=diff;
   const frt=document.getElementById('form-rep-txt');
   frt.style.display=modoRes==='formacion'?'block':'none';
   frt.textContent='Formación más representativa: '+PUESTOS.map(p=>`${fr[p]} ${PE[p]}`).join('  ');
-
   const sortP=p=>JUGADORES.filter(j=>j.p===p).sort((a,b)=>(vj[b.id]||0)-(vj[a.id]||0));
   const top26Libre=[...JUGADORES].sort((a,b)=>(vj[b.id]||0)-(vj[a.id]||0)).slice(0,26);
   const top26Form=PUESTOS.flatMap(p=>sortP(p).slice(0,fr[p]));
   const lista=modoRes==='libre'?top26Libre:top26Form;
-
   let html=PUESTOS.map(p=>{
-    const jugs=lista.filter(j=>j.p===p);
-    if(!jugs.length)return'';
+    const jugs=lista.filter(j=>j.p===p);if(!jugs.length)return'';
     return`<div class="rptitle" style="color:${PC[p]}">${PE[p]} ${p}s (${jugs.length})</div>`+
     jugs.map((j,i)=>{
-      const votes=vj[j.id]||0;
-      const pct=Math.round((votes/votos.length)*100);
-      return`<div class="rjug">
-        <div class="rrank" style="background:${i<3?PC[j.p]:'#eee'};color:${i<3?'#fff':'#999'}">${i+1}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.n}</div>
-          <div style="font-size:11px;color:#888;margin-bottom:4px">${j.c}</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="rbar-bg"><div class="rbar-fill" style="width:${pct}%;background:${PC[j.p]}"></div></div>
-            <span style="font-size:11px;color:#888;min-width:60px">${votes} voto${votes!==1?'s':''} (${pct}%)</span>
-          </div>
-        </div>
-      </div>`;
+      const votes=vj[j.id]||0,pct=Math.round((votes/votos.length)*100);
+      return`<div class="rjug"><div class="rrank" style="background:${i<3?PC[j.p]:'#eee'};color:${i<3?'#fff':'#999'}">${i+1}</div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.n}</div><div style="font-size:11px;color:#888;margin-bottom:4px">${j.c}</div><div style="display:flex;align-items:center;gap:8px"><div class="rbar-bg"><div class="rbar-fill" style="width:${pct}%;background:${PC[j.p]}"></div></div><span style="font-size:11px;color:#888;min-width:60px">${votes} voto${votes!==1?'s':''} (${pct}%)</span></div></div></div>`;
     }).join('');
   }).join('');
-
-  html+=`<div style="padding:14px 16px">
-    <div style="font-weight:700;color:#128C7E;margin-bottom:8px;font-size:13px;text-transform:uppercase;letter-spacing:1px">🗳️ Todos los votos (${votos.length})</div>
-    ${[...votos].reverse().map(v=>`
-      <div style="background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,0.08)">
-        <div style="font-weight:600;font-size:14px">👤 ${v.nombre}</div>
-        <div style="font-size:11px;color:#888">${new Date(v.fecha).toLocaleString('es-AR')}</div>
-        <div style="font-size:12px;color:#666;margin-top:4px">${PUESTOS.filter(p=>v.formacion[p]>0).map(p=>`${PE[p]} ${v.formacion[p]}`).join('  ')}</div>
-      </div>`).join('')}
-  </div>`;
-
+  html+=`<div style="padding:14px 16px"><div style="font-weight:700;color:#128C7E;margin-bottom:8px;font-size:13px;text-transform:uppercase;letter-spacing:1px">🗳️ Todos los votos (${votos.length})</div>${[...votos].reverse().map(v=>`<div style="background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,0.08)"><div style="font-weight:600;font-size:14px">👤 ${v.nombre}</div><div style="font-size:11px;color:#888">${new Date(v.fecha).toLocaleString('es-AR')}</div><div style="font-size:12px;color:#666;margin-top:4px">${PUESTOS.filter(p=>v.formacion[p]>0).map(p=>`${PE[p]} ${v.formacion[p]}`).join('  ')}</div></div>`).join('')}</div>`;
   document.getElementById('res-contenido').innerHTML=html;
 }
 
-// ── ARRANCAR ──────────────────────────────────────────────────────
 iniciar();
 </script>
 </body>
