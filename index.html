@@ -142,41 +142,51 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// CONFIGURACIÓN — completá estos 2 valores
-// ══════════════════════════════════════════════════════
-const API_KEY = "$2a$10$kNySKA3zAM.8L.RIs8lBSOCFjR9Dndsd05WmmBXSZLFdDeqGtj/xS";   // empieza con $2b$10$...
-const BIN_ID  = "69cd645136566621a86dde99"; // tu bin ID (ya lo tengo del error)
-// ══════════════════════════════════════════════════════
+// ── SheetDB API ───────────────────────────────────────────────────
+const SHEETDB = "https://sheetdb.io/api/v1/fblcsm0tl0qac";
 
-const BASE = "https://api.jsonbin.io/v3/b/" + BIN_ID;
-
-// Leer: bin público, sin key
 async function apiLeer() {
-  const r = await fetch(BASE + "?meta=false");
+  const r = await fetch(SHEETDB);
   if (!r.ok) throw new Error("Error " + r.status);
-  const d = await r.json();
-  return Array.isArray(d.votos) ? d.votos : [];
+  const rows = await r.json();
+  // Cada fila tiene: nombre, fecha, formacion (JSON string), seleccion (JSON string)
+  return rows.map(row => ({
+    nombre:    row.nombre,
+    fecha:     row.fecha,
+    formacion: JSON.parse(row.formacion || "{}"),
+    seleccion: JSON.parse(row.seleccion || "[]"),
+  }));
 }
 
-// Escribir: necesita la master key
-async function apiGuardar(votosNuevos) {
-  const r = await fetch(BASE, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Master-Key": API_KEY,
-      "X-Bin-Versioning": "false"
-    },
-    body: JSON.stringify({votos: votosNuevos})
+async function apiCrear(entry) {
+  const r = await fetch(SHEETDB, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({data: [{
+      nombre:    entry.nombre,
+      fecha:     entry.fecha,
+      formacion: JSON.stringify(entry.formacion),
+      seleccion: JSON.stringify(entry.seleccion),
+    }]})
   });
-  if (!r.ok) {
-    const txt = await r.text();
-    throw new Error("Error " + r.status + ": " + txt);
-  }
-  return votosNuevos;
+  if (!r.ok) throw new Error("Error " + r.status);
 }
 
+async function apiActualizar(entry) {
+  // SheetDB actualiza por columna nombre
+  const r = await fetch(SHEETDB + "/nombre/" + encodeURIComponent(entry.nombre), {
+    method: "PATCH",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({data: {
+      fecha:     entry.fecha,
+      formacion: JSON.stringify(entry.formacion),
+      seleccion: JSON.stringify(entry.seleccion),
+    }})
+  });
+  if (!r.ok) throw new Error("Error " + r.status);
+}
+
+// ── DATOS ─────────────────────────────────────────────────────────
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",    p:"Arquero",   c:"Aston Villa"},
   {id:2,  n:"Gerónimo Rulli",       p:"Arquero",   c:"Ajax"},
@@ -271,18 +281,22 @@ const SK="arg_mundial_nombre";
 
 let nombre="",formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7},seleccion=[],filtroActivo="Todos",modoRes="libre",votos=[];
 
+// ── TOAST ─────────────────────────────────────────────────────────
 let toastTimer;
 function toast(msg){
   clearTimeout(toastTimer);
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
+  t.textContent=msg;t.classList.add('show');
   toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
+
+// ── NAV ───────────────────────────────────────────────────────────
 function mostrar(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('s-'+s).classList.add('active');
 }
 
+// ── INICIO ────────────────────────────────────────────────────────
 async function iniciar(){
   mostrar('loading');
   try{ votos=await apiLeer(); }
@@ -291,9 +305,16 @@ async function iniciar(){
   if(nom){
     nombre=nom;
     const miVoto=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    if(miVoto){ formacion={...miVoto.formacion}; seleccion=[...miVoto.seleccion]; renderInicioBienvenida(miVoto); mostrar('inicio'); return; }
+    if(miVoto){
+      formacion={...miVoto.formacion};
+      seleccion=[...miVoto.seleccion];
+      renderInicioBienvenida(miVoto);
+      mostrar('inicio');
+      return;
+    }
   }
-  renderInicioNuevo(); mostrar('inicio');
+  renderInicioNuevo();
+  mostrar('inicio');
 }
 
 function renderInicioNuevo(){
@@ -309,30 +330,32 @@ function renderInicioBienvenida(miVoto){
   document.getElementById('inicio-acciones').innerHTML=`<button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button><button class="boutline" onclick="verMiLista()">👁️ Ver mi lista actual</button><button class="boutline" style="margin-top:10px" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>`;
 }
 
-function verMiLista(){ renderConfirmacion(false); mostrar('confirmacion'); }
-function cambiarVoto(){ seleccion=[]; document.getElementById('form-titulo').textContent='Hola, '+nombre+'!'; renderFormacion(); mostrar('formacion'); }
-function volverDesdeFormacion(){ const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase()); if(m)renderInicioBienvenida(m); else renderInicioNuevo(); mostrar('inicio'); }
-function volverDeResultados(){ const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase()); if(m){renderInicioBienvenida(m);}else{renderInicioNuevo();} mostrar('inicio'); }
+function verMiLista(){renderConfirmacion(false);mostrar('confirmacion');}
+function cambiarVoto(){seleccion=[];document.getElementById('form-titulo').textContent='Hola, '+nombre+'!';renderFormacion();mostrar('formacion');}
+function volverDesdeFormacion(){const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());if(m)renderInicioBienvenida(m);else renderInicioNuevo();mostrar('inicio');}
+function volverDeResultados(){const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());if(m){renderInicioBienvenida(m);}else{renderInicioNuevo();}mostrar('inicio');}
 
 async function recargarVotos(conToast){
   if(conToast)toast("Actualizando...");
-  try{ votos=await apiLeer(); renderResultados(); if(conToast)toast("✅ Actualizado"); }
-  catch(e){ if(conToast)toast("⚠️ Error al actualizar"); }
+  try{votos=await apiLeer();renderResultados();if(conToast)toast("✅ Actualizado");}
+  catch(e){if(conToast)toast("⚠️ Error al actualizar");}
 }
 
-document.getElementById('inp-nombre').addEventListener('input',function(){ document.getElementById('btn-empezar').disabled=!this.value.trim(); });
-document.getElementById('inp-nombre').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim())empezar(); });
+// ── NOMBRE ────────────────────────────────────────────────────────
+document.getElementById('inp-nombre').addEventListener('input',function(){document.getElementById('btn-empezar').disabled=!this.value.trim();});
+document.getElementById('inp-nombre').addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim())empezar();});
 
 function empezar(){
-  nombre=document.getElementById('inp-nombre').value.trim(); if(!nombre)return;
+  nombre=document.getElementById('inp-nombre').value.trim();if(!nombre)return;
   localStorage.setItem(SK,nombre);
   const prev=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if(prev){formacion={...prev.formacion};}else{formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7};}
+  formacion=prev?{...prev.formacion}:{Arquero:3,Defensor:8,Volante:8,Delantero:7};
   seleccion=[];
   document.getElementById('form-titulo').textContent='Hola, '+nombre+'!';
-  renderFormacion(); mostrar('formacion');
+  renderFormacion();mostrar('formacion');
 }
 
+// ── FORMACIÓN ─────────────────────────────────────────────────────
 function renderFormacion(){
   const total=Object.values(formacion).reduce((a,b)=>a+b,0),valid=total===26;
   document.getElementById('puestos-cards').innerHTML=PUESTOS.map(p=>{
@@ -354,6 +377,7 @@ function irASeleccion(){
   renderCupos();renderJugadores();actualizarPie();mostrar('seleccion');
 }
 
+// ── SELECCIÓN ─────────────────────────────────────────────────────
 function getConteos(){const c={Arquero:0,Defensor:0,Volante:0,Delantero:0};seleccion.forEach(id=>{if(JM[id])c[JM[id].p]++;});return c;}
 function isValid(){if(seleccion.length!==26)return false;const c=getConteos();return PUESTOS.every(p=>c[p]===formacion[p]);}
 
@@ -404,11 +428,16 @@ async function confirmar(){
   if(!isValid())return;
   mostrar('guardando');
   try{
-    const actuales=await apiLeer();
-    const idx=actuales.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    const entry={nombre,seleccion:[...seleccion],formacion:{...formacion},fecha:new Date().toISOString()};
-    if(idx>=0)actuales[idx]=entry;else actuales.push(entry);
-    votos=await apiGuardar(actuales);
+    const entry={nombre,fecha:new Date().toISOString(),formacion:{...formacion},seleccion:[...seleccion]};
+    const existe=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    if(existe){
+      await apiActualizar(entry);
+      const idx=votos.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+      votos[idx]=entry;
+    } else {
+      await apiCrear(entry);
+      votos.push(entry);
+    }
     localStorage.setItem(SK,nombre);
     renderConfirmacion(true);
     mostrar('confirmacion');
@@ -419,6 +448,7 @@ async function confirmar(){
   }
 }
 
+// ── CONFIRMACIÓN ──────────────────────────────────────────────────
 function renderConfirmacion(recienVoto){
   document.getElementById('conf-sub').textContent=nombre;
   const form=PUESTOS.filter(p=>formacion[p]>0).map(p=>`${formacion[p]} ${p}${formacion[p]>1&&p!=='Arquero'?'s':''}`).join(' · ');
@@ -432,6 +462,7 @@ function renderConfirmacion(recienVoto){
   }).join('');
 }
 
+// ── RESULTADOS ────────────────────────────────────────────────────
 function setModo(m){
   modoRes=m;
   document.getElementById('btn-libre').classList.toggle('active',m==='libre');
