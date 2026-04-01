@@ -142,14 +142,13 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── SheetDB API ───────────────────────────────────────────────────
 const SHEETDB = "https://sheetdb.io/api/v1/fblcsm0tl0qac";
 
+// Leer todos los votos
 async function apiLeer() {
   const r = await fetch(SHEETDB);
   if (!r.ok) throw new Error("Error " + r.status);
   const rows = await r.json();
-  // Cada fila tiene: nombre, fecha, formacion (JSON string), seleccion (JSON string)
   return rows.map(row => ({
     nombre:    row.nombre,
     fecha:     row.fecha,
@@ -158,35 +157,37 @@ async function apiLeer() {
   }));
 }
 
+// Crear fila nueva
 async function apiCrear(entry) {
   const r = await fetch(SHEETDB, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({data: [{
+    body: JSON.stringify({data:[{
       nombre:    entry.nombre,
       fecha:     entry.fecha,
       formacion: JSON.stringify(entry.formacion),
       seleccion: JSON.stringify(entry.seleccion),
     }]})
   });
-  if (!r.ok) throw new Error("Error " + r.status);
+  if (!r.ok) throw new Error("Error creando: " + r.status);
 }
 
-async function apiActualizar(entry) {
-  // SheetDB actualiza por columna nombre
-  const r = await fetch(SHEETDB + "/nombre/" + encodeURIComponent(entry.nombre), {
-    method: "PATCH",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({data: {
-      fecha:     entry.fecha,
-      formacion: JSON.stringify(entry.formacion),
-      seleccion: JSON.stringify(entry.seleccion),
-    }})
+// Borrar fila por nombre
+async function apiBorrar(nom) {
+  const r = await fetch(SHEETDB + "/nombre/" + encodeURIComponent(nom), {
+    method: "DELETE",
+    headers: {"Content-Type":"application/json"}
   });
-  if (!r.ok) throw new Error("Error " + r.status);
+  // Si no existe (404) no es error crítico
+  if (!r.ok && r.status !== 404) throw new Error("Error borrando: " + r.status);
 }
 
-// ── DATOS ─────────────────────────────────────────────────────────
+// Guardar voto: borra la fila anterior (si existe) y crea una nueva
+async function apiGuardar(entry) {
+  await apiBorrar(entry.nombre);   // borra si existe
+  await apiCrear(entry);           // crea siempre
+}
+
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",    p:"Arquero",   c:"Aston Villa"},
   {id:2,  n:"Gerónimo Rulli",       p:"Arquero",   c:"Ajax"},
@@ -281,40 +282,20 @@ const SK="arg_mundial_nombre";
 
 let nombre="",formacion={Arquero:3,Defensor:8,Volante:8,Delantero:7},seleccion=[],filtroActivo="Todos",modoRes="libre",votos=[];
 
-// ── TOAST ─────────────────────────────────────────────────────────
 let toastTimer;
-function toast(msg){
-  clearTimeout(toastTimer);
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
-}
+function toast(msg){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),3500);}
+function mostrar(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 
-// ── NAV ───────────────────────────────────────────────────────────
-function mostrar(s){
-  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-  document.getElementById('s-'+s).classList.add('active');
-}
-
-// ── INICIO ────────────────────────────────────────────────────────
 async function iniciar(){
   mostrar('loading');
-  try{ votos=await apiLeer(); }
-  catch(e){ votos=[]; toast("⚠️ Sin conexión — modo offline"); }
+  try{votos=await apiLeer();}catch(e){votos=[];toast("⚠️ Sin conexión — modo offline");}
   const nom=localStorage.getItem(SK);
   if(nom){
     nombre=nom;
     const miVoto=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    if(miVoto){
-      formacion={...miVoto.formacion};
-      seleccion=[...miVoto.seleccion];
-      renderInicioBienvenida(miVoto);
-      mostrar('inicio');
-      return;
-    }
+    if(miVoto){formacion={...miVoto.formacion};seleccion=[...miVoto.seleccion];renderInicioBienvenida(miVoto);mostrar('inicio');return;}
   }
-  renderInicioNuevo();
-  mostrar('inicio');
+  renderInicioNuevo();mostrar('inicio');
 }
 
 function renderInicioNuevo(){
@@ -341,7 +322,6 @@ async function recargarVotos(conToast){
   catch(e){if(conToast)toast("⚠️ Error al actualizar");}
 }
 
-// ── NOMBRE ────────────────────────────────────────────────────────
 document.getElementById('inp-nombre').addEventListener('input',function(){document.getElementById('btn-empezar').disabled=!this.value.trim();});
 document.getElementById('inp-nombre').addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim())empezar();});
 
@@ -355,7 +335,6 @@ function empezar(){
   renderFormacion();mostrar('formacion');
 }
 
-// ── FORMACIÓN ─────────────────────────────────────────────────────
 function renderFormacion(){
   const total=Object.values(formacion).reduce((a,b)=>a+b,0),valid=total===26;
   document.getElementById('puestos-cards').innerHTML=PUESTOS.map(p=>{
@@ -377,7 +356,6 @@ function irASeleccion(){
   renderCupos();renderJugadores();actualizarPie();mostrar('seleccion');
 }
 
-// ── SELECCIÓN ─────────────────────────────────────────────────────
 function getConteos(){const c={Arquero:0,Defensor:0,Volante:0,Delantero:0};seleccion.forEach(id=>{if(JM[id])c[JM[id].p]++;});return c;}
 function isValid(){if(seleccion.length!==26)return false;const c=getConteos();return PUESTOS.every(p=>c[p]===formacion[p]);}
 
@@ -429,15 +407,10 @@ async function confirmar(){
   mostrar('guardando');
   try{
     const entry={nombre,fecha:new Date().toISOString(),formacion:{...formacion},seleccion:[...seleccion]};
-    const existe=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    if(existe){
-      await apiActualizar(entry);
-      const idx=votos.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-      votos[idx]=entry;
-    } else {
-      await apiCrear(entry);
-      votos.push(entry);
-    }
+    await apiGuardar(entry);
+    // Actualizar estado local
+    const idx=votos.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    if(idx>=0)votos[idx]=entry;else votos.push(entry);
     localStorage.setItem(SK,nombre);
     renderConfirmacion(true);
     mostrar('confirmacion');
@@ -448,7 +421,6 @@ async function confirmar(){
   }
 }
 
-// ── CONFIRMACIÓN ──────────────────────────────────────────────────
 function renderConfirmacion(recienVoto){
   document.getElementById('conf-sub').textContent=nombre;
   const form=PUESTOS.filter(p=>formacion[p]>0).map(p=>`${formacion[p]} ${p}${formacion[p]>1&&p!=='Arquero'?'s':''}`).join(' · ');
@@ -462,7 +434,6 @@ function renderConfirmacion(recienVoto){
   }).join('');
 }
 
-// ── RESULTADOS ────────────────────────────────────────────────────
 function setModo(m){
   modoRes=m;
   document.getElementById('btn-libre').classList.toggle('active',m==='libre');
