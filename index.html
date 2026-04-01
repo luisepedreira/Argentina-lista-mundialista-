@@ -142,52 +142,32 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SHEETDB = "https://sheetdb.io/api/v1/fblcsm0tl0qac";
+// ── Firebase Realtime Database (REST API — sin SDK, sin librerías) ──
+// En modo de prueba no necesita ninguna autenticación
+const FB = "https://mundial-2026-c9d8d-default-rtdb.firebaseio.com/votos";
 
-// Leer todos los votos
 async function apiLeer() {
-  const r = await fetch(SHEETDB);
+  const r = await fetch(FB + ".json");
   if (!r.ok) throw new Error("Error " + r.status);
-  const rows = await r.json();
-  return rows.map(row => ({
-    nombre:    row.nombre,
-    fecha:     row.fecha,
-    formacion: JSON.parse(row.formacion || "{}"),
-    seleccion: JSON.parse(row.seleccion || "[]"),
-  }));
+  const data = await r.json();
+  if (!data) return [];
+  // Firebase devuelve un objeto con claves generadas; convertimos a array
+  return Object.values(data);
 }
 
-// Crear fila nueva
-async function apiCrear(entry) {
-  const r = await fetch(SHEETDB, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({data:[{
-      nombre:    entry.nombre,
-      fecha:     entry.fecha,
-      formacion: JSON.stringify(entry.formacion),
-      seleccion: JSON.stringify(entry.seleccion),
-    }]})
-  });
-  if (!r.ok) throw new Error("Error creando: " + r.status);
-}
-
-// Borrar fila por nombre
-async function apiBorrar(nom) {
-  const r = await fetch(SHEETDB + "/nombre/" + encodeURIComponent(nom), {
-    method: "DELETE",
-    headers: {"Content-Type":"application/json"}
-  });
-  // Si no existe (404) no es error crítico
-  if (!r.ok && r.status !== 404) throw new Error("Error borrando: " + r.status);
-}
-
-// Guardar voto: borra la fila anterior (si existe) y crea una nueva
 async function apiGuardar(entry) {
-  await apiBorrar(entry.nombre);   // borra si existe
-  await apiCrear(entry);           // crea siempre
+  // Usamos el nombre como clave para que cada persona tenga un solo voto
+  // PUT sobre /votos/NOMBRE.json sobreescribe si existe o crea si no existe
+  const clave = entry.nombre.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  const r = await fetch(FB + "/" + clave + ".json", {
+    method: "PUT",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(entry)
+  });
+  if (!r.ok) throw new Error("Error " + r.status);
 }
 
+// ── Jugadores ──────────────────────────────────────────────────────
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",    p:"Arquero",   c:"Aston Villa"},
   {id:2,  n:"Gerónimo Rulli",       p:"Arquero",   c:"Ajax"},
@@ -314,7 +294,7 @@ function renderInicioBienvenida(miVoto){
 function verMiLista(){renderConfirmacion(false);mostrar('confirmacion');}
 function cambiarVoto(){seleccion=[];document.getElementById('form-titulo').textContent='Hola, '+nombre+'!';renderFormacion();mostrar('formacion');}
 function volverDesdeFormacion(){const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());if(m)renderInicioBienvenida(m);else renderInicioNuevo();mostrar('inicio');}
-function volverDeResultados(){const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());if(m){renderInicioBienvenida(m);}else{renderInicioNuevo();}mostrar('inicio');}
+function volverDeResultados(){const m=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());if(m)renderInicioBienvenida(m);else renderInicioNuevo();mostrar('inicio');}
 
 async function recargarVotos(conToast){
   if(conToast)toast("Actualizando...");
@@ -408,7 +388,6 @@ async function confirmar(){
   try{
     const entry={nombre,fecha:new Date().toISOString(),formacion:{...formacion},seleccion:[...seleccion]};
     await apiGuardar(entry);
-    // Actualizar estado local
     const idx=votos.findIndex(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
     if(idx>=0)votos[idx]=entry;else votos.push(entry);
     localStorage.setItem(SK,nombre);
@@ -424,9 +403,7 @@ async function confirmar(){
 function renderConfirmacion(recienVoto){
   document.getElementById('conf-sub').textContent=nombre;
   const form=PUESTOS.filter(p=>formacion[p]>0).map(p=>`${formacion[p]} ${p}${formacion[p]>1&&p!=='Arquero'?'s':''}`).join(' · ');
-  const titulo=recienVoto?'¡Tu lista fue guardada!':'Tu lista actual';
-  const emoji=recienVoto?'🎉':'📋';
-  document.getElementById('conf-bubble').innerHTML=`<span style="font-size:32px">${emoji}</span><br><br><strong>${titulo}, ${nombre}!</strong><br><br>${form}`;
+  document.getElementById('conf-bubble').innerHTML=`<span style="font-size:32px">${recienVoto?'🎉':'📋'}</span><br><br><strong>${recienVoto?'¡Tu lista fue guardada!':'Tu lista actual'}, ${nombre}!</strong><br><br>${form}`;
   document.getElementById('conf-lista').innerHTML=PUESTOS.map(p=>{
     const jugs=seleccion.map(id=>JM[id]).filter(j=>j&&j.p===p);
     if(!jugs.length)return'';
