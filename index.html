@@ -168,7 +168,13 @@ async function iniciar(){
   if(nom){
     nombre = nom;
     const yaVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    if(yaVoto){ seleccion=[...yaVoto.seleccion]; renderInicioBienvenida(yaVoto); mostrar('inicio'); return; }
+    if(yaVoto){ 
+        // LIMPIEZA: Filtra IDs que ya no existen en la lista de JUGADORES
+        seleccion = (yaVoto.seleccion || []).filter(id => JM[id]);
+        renderInicioBienvenida(yaVoto); 
+        mostrar('inicio'); 
+        return; 
+    }
   }
   renderInicioNuevo(); mostrar('inicio');
 }
@@ -205,7 +211,7 @@ function renderFiltros(){
 
 function setF(f){ 
   filtroActivo=f; 
-  document.getElementById('inp-busq').value = ''; // Limpieza de búsqueda al cambiar filtro
+  document.getElementById('inp-busq').value = ''; 
   renderFiltros(); 
   renderJugadores(); 
 }
@@ -227,7 +233,10 @@ function toggleJ(id){
   if(idx > -1) seleccion.splice(idx,1);
   else if(seleccion.length < 26) seleccion.push(id);
   else toast("¡Ya elegiste 26!");
-  renderJugadores(); actualizarPie();
+  
+  renderJugadores(); 
+  actualizarPie();
+  // Sincroniza el contador con el largo real del array filtrado
   document.getElementById('sel-sub').textContent = `${seleccion.length} / 26 seleccionados`;
 }
 
@@ -239,16 +248,18 @@ function actualizarPie(){
 
 async function confirmar(){
   mostrar('guardando');
-  await apiGuardar({nombre, seleccion, fecha: new Date().toISOString()});
+  // Solo guarda los IDs que existen actualmente
+  const seleccionLimpia = seleccion.filter(id => JM[id]);
+  await apiGuardar({nombre, seleccion: seleccionLimpia, fecha: new Date().toISOString()});
   votos = await apiLeer();
   renderConfirmacion(); mostrar('confirmacion');
 }
 
 function renderConfirmacion(){
   document.getElementById('conf-sub').textContent = nombre;
-  document.getElementById('conf-lista').innerHTML = seleccion.map(id => {
+  const listaValida = seleccion.filter(id => JM[id]);
+  document.getElementById('conf-lista').innerHTML = listaValida.map(id => {
     const j = JM[id];
-    if(!j) return ""; // Seguridad por si cambia la lista de jugadores
     return `<div class="conf-jug">${PE[j.p]} ${j.n}</div>`;
   }).join('');
 }
@@ -258,7 +269,8 @@ function renderResultados() {
   const cont = {};
   votos.forEach(v => {
     if (v.seleccion) {
-      v.seleccion.forEach(id => cont[id] = (cont[id] || 0) + 1);
+      // Solo cuenta votos de jugadores que existen hoy
+      v.seleccion.filter(id => JM[id]).forEach(id => cont[id] = (cont[id] || 0) + 1);
     }
   });
 
@@ -306,7 +318,11 @@ function setModo(m){
 }
 
 function verMiLista(){ renderConfirmacion(); mostrar('confirmacion'); }
-function cambiarVoto(){ irASeleccion(); }
+function cambiarVoto(){ 
+    // Al intentar cambiar, limpiamos cualquier ID huérfano antes de entrar
+    seleccion = seleccion.filter(id => JM[id]);
+    irASeleccion(); 
+}
 function volverDesdeSeleccion(){ mostrar('inicio'); }
 function volverDeResultados(){ mostrar('inicio'); }
 
