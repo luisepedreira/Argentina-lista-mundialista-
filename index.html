@@ -265,19 +265,48 @@ function renderConfirmacion(){
   }).join('');
 }
 
-function renderResultados(){
+function renderResultados() {
+  const container = document.getElementById('res-contenido');
   const cont = {};
-  votos.forEach(v => v.seleccion.forEach(id => cont[id] = (cont[id]||0)+1));
-  const ord = JUGADORES.map(j => ({...j, v: cont[j.id]||0})).sort((a,b)=>b.v - a.v);
-  document.getElementById('res-sub').textContent = `${votos.length} listas creadas`;
-  
-  document.getElementById('res-contenido').innerHTML = ord.map((j, i) => {
-    const por = Math.round((j.v / (votos.length||1)) * 100);
-    return `<div class="rjug">
-      <div style="flex:1"><b>${i+1}. ${j.n}</b> (${por}%)
-      <div class="rbar-bg"><div class="rbar-fill" style="width:${por}%; background:${PC[j.p]}"></div></div>
-      </div></div>`;
-  }).join('');
+  votos.forEach(v => {
+    if (v.seleccion) {
+      v.seleccion.forEach(id => cont[id] = (cont[id] || 0) + 1);
+    }
+  });
+
+  const ord = JUGADORES.map(j => ({ ...j, v: cont[j.id] || 0 }))
+    .sort((a, b) => b.v - a.v);
+
+  if (modoRes === 'general') {
+    container.innerHTML = ord.map((j, i) => renderFilaRes(j, i)).join('');
+  } else {
+    // Lógica por categorías
+    container.innerHTML = PUESTOS.map(p => {
+      const jugsDelPuesto = ord.filter(j => j.p === p);
+      return `
+        <div style="background:#e1ebe8; padding:8px 16px; font-weight:700; font-size:12px; color:#075E54; text-transform:uppercase; letter-spacing:1px">
+          ${PE[p]} ${p}s
+        </div>
+        ${jugsDelPuesto.map((j, i) => renderFilaRes(j, i)).join('')}
+      `;
+    }).join('');
+  }
+}
+
+function renderFilaRes(j, i) {
+  const por = Math.round((j.v / (votos.length || 1)) * 100);
+  return `
+    <div class="rjug">
+      <div style="flex:1">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+          <span><b>${j.n}</b> <small style="color:#666">${j.c}</small></span>
+          <span style="font-weight:700; color:#128C7E">${por}%</span>
+        </div>
+        <div class="rbar-bg">
+          <div class="rbar-fill" style="width:${por}%; background:${PC[j.p]}"></div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function setModo(m){ modoRes=m; renderResultados(); }
