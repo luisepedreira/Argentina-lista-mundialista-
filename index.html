@@ -2,160 +2,113 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Argentina Mundial 2026 🇦🇷</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ECE5DD;min-height:100vh}
-    #app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+    #app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:#f0f2f5}
     .header{background:linear-gradient(135deg,#075E54,#128C7E);padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);position:sticky;top:0;z-index:100}
     .hav{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
     .htitle{color:#fff;font-weight:700;font-size:17px}
     .hsub{color:#B2DFDB;font-size:12px}
     .bback{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px}
-    .bubble{padding:0 12px 12px}
+    .bubble{padding:12px}
     .bubble-i{background:#fff;border-radius:18px 18px 18px 4px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.12);font-size:14px;color:#111;display:inline-block;max-width:92%;line-height:1.6}
     .bverde{width:100%;padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:24px;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
     .bverde:disabled{background:#ccc;cursor:default}
     .boutline{width:100%;padding:14px;background:#fff;border:2px solid #128C7E;border-radius:24px;color:#128C7E;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px}
     .screen{display:none;flex-direction:column;flex:1}
     .screen.active{display:flex}
-    input{font-family:inherit}
     .loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#128C7E;font-weight:700}
     .spinner{width:40px;height:40px;border:4px solid #B2DFDB;border-top-color:#128C7E;border-radius:50%;animation:spin 0.8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .cupos-bar{background:#075E54;padding:8px 12px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .cupos-bar::-webkit-scrollbar{display:none}
-    .cbtn{border-radius:20px;padding:5px 13px;font-size:12px;color:#fff;white-space:nowrap;cursor:pointer;border:1px solid rgba(255,255,255,0.3);flex-shrink:0;background:rgba(255,255,255,0.12)}
-    .cbtn.active{background:rgba(255,255,255,0.35)}
+    .cupos-bar{background:#075E54;padding:8px 12px;display:flex;gap:8px;overflow-x:auto}
+    .cbtn{border-radius:20px;padding:5px 13px;font-size:12px;color:#fff;white-space:nowrap;cursor:pointer;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12)}
+    .cbtn.active{background:rgba(255,255,255,0.35);border-color:#fff}
     .search-bar{background:#f0f0f0;padding:8px 12px}
     .sw{position:relative}
-    .sw span{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none}
-    .sw input{width:100%;padding:9px 36px;border-radius:20px;border:none;font-size:14px;outline:none;background:#fff}
-    .sclear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;color:#999}
-    .jlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-    .jitem{display:flex;align-items:center;gap:12px;padding:11px 16px;background:#fff;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.1s}
+    .sw input{width:100%;padding:9px 36px;border-radius:20px;border:none;font-size:14px;outline:none}
+    .jlist{flex:1;overflow-y:auto}
+    .jitem{display:flex;align-items:center;gap:12px;padding:11px 16px;background:#fff;border-bottom:1px solid #f0f0f0;cursor:pointer}
     .jitem.sel{background:#DCF8C6}
-    .jav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid}
+    .jav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid}
     .pie{padding:12px 16px;background:#fff;border-top:1px solid #eee}
     .mbar{background:#075E54;padding:10px 12px;display:flex;gap:8px}
     .mbtn{flex:1;padding:8px;border-radius:20px;border:none;color:#fff;cursor:pointer;font-size:13px;background:rgba(255,255,255,0.15)}
     .mbtn.active{background:#25D366;font-weight:700}
-    .rptitle{padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
     .rjug{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#fff;border-bottom:1px solid #f0f0f0}
-    .rrank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
-    .rbar-bg{flex:1;height:4px;background:#eee;border-radius:2px}
+    .rbar-bg{flex:1;height:4px;background:#eee;border-radius:2px;margin-top:4px}
     .rbar-fill{height:100%;border-radius:2px}
-    .scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 0}
-    .conf-jug{background:#fff;border-radius:10px;padding:8px 12px;margin-bottom:4px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,0.08)}
-    .empty{text-align:center;padding:40px 20px;color:#999}
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+    .conf-jug{background:#fff;border-radius:10px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
     .toast.show{opacity:1}
-    .contador-pill{background:rgba(255,255,255,0.2);border-radius:12px;padding:3px 10px;font-size:13px;font-weight:700;color:#fff;margin-left:auto}
   </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- LOADING -->
-  <div id="s-loading" class="screen active" style="flex-direction:column">
-    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Cargando...</div></div></div>
-    <div class="loading"><div class="spinner"></div><div>Cargando votación...</div></div>
+  <div id="s-loading" class="screen active">
+    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina 2026</div><div class="hsub">Cargando...</div></div></div>
+    <div class="loading"><div class="spinner"></div><div>Cargando datos...</div></div>
   </div>
 
-  <!-- INICIO -->
-  <div id="s-inicio" class="screen" style="flex-direction:column">
-    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub" id="inicio-sub">Armá tu lista de 26</div></div></div>
-    <div style="flex:1;overflow-y:auto;padding:20px 0">
+  <div id="s-inicio" class="screen">
+    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub" id="inicio-sub">Armá tu lista</div></div></div>
+    <div style="flex:1;overflow-y:auto">
       <div class="bubble"><div class="bubble-i" id="inicio-bubble"></div></div>
       <div style="padding:0 12px" id="inicio-acciones"></div>
     </div>
   </div>
 
-  <!-- NOMBRE -->
-  <div id="s-nombre" class="screen" style="flex-direction:column">
-    <div class="header"><button class="bback" onclick="mostrar('inicio')">←</button><div class="hav">🇦🇷</div><div><div class="htitle">Argentina Mundial 2026</div><div class="hsub">Ingresá tu nombre</div></div></div>
-    <div style="flex:1;overflow-y:auto;padding:20px 0">
-      <div class="bubble"><div class="bubble-i">¿Cómo te llamás? Así guardamos tu voto.</div></div>
-      <div style="padding:0 12px">
-        <input id="inp-nombre" type="text" placeholder="Tu nombre..." autocomplete="off"
-          style="width:100%;padding:14px 16px;border-radius:24px;border:none;font-size:15px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);margin-bottom:10px"/>
-        <button class="bverde" id="btn-empezar" disabled onclick="empezar()">Empezar a votar →</button>
-      </div>
+  <div id="s-nombre" class="screen">
+    <div class="header"><button class="bback" onclick="mostrar('inicio')">←</button><div class="hav">🇦🇷</div><div><div class="htitle">Tu Nombre</div><div class="hsub">Identificate</div></div></div>
+    <div style="padding:20px">
+      <input id="inp-nombre" type="text" placeholder="Escribí tu nombre..." style="width:100%;padding:14px;border-radius:24px;border:1px solid #ccc;margin-bottom:10px"/>
+      <button class="bverde" id="btn-empezar" disabled onclick="empezar()">Empezar →</button>
     </div>
   </div>
 
-  <!-- SELECCIÓN -->
-  <div id="s-seleccion" class="screen" style="flex-direction:column">
-    <div class="header">
-      <button class="bback" onclick="volverDesdeSeleccion()">←</button>
-      <div class="hav">🇦🇷</div>
-      <div style="flex:1"><div class="htitle" id="sel-titulo">Elegí tus jugadores</div><div class="hsub" id="sel-sub">0 / 26 seleccionados</div></div>
-    </div>
+  <div id="s-seleccion" class="screen">
+    <div class="header"><button class="bback" onclick="volverDesdeSeleccion()">←</button><div style="flex:1"><div class="htitle">Selección</div><div class="hsub" id="sel-sub">0 / 26 seleccionados</div></div></div>
     <div class="cupos-bar" id="filtros-bar"></div>
-    <div class="search-bar">
-      <div class="sw">
-        <span>🔍</span>
-        <input id="inp-busq" type="text" placeholder="Buscar por nombre o club..." oninput="filtrarJ()" autocomplete="off"/>
-        <button class="sclear" id="btn-clear" onclick="limpiarBusq()" style="display:none">✕</button>
-      </div>
-    </div>
+    <div class="search-bar"><div class="sw">🔍 <input id="inp-busq" type="text" placeholder="Buscar jugador..." oninput="renderJugadores()"/></div></div>
     <div class="jlist" id="jlist"></div>
-    <div class="pie">
-      <button class="bverde" id="btn-confirmar" onclick="confirmar()">Confirmar mi lista</button>
+    <div class="pie"><button class="bverde" id="btn-confirmar" onclick="confirmar()">Seleccioná 26 jugadores</button></div>
+  </div>
+
+  <div id="s-guardando" class="screen">
+    <div class="loading"><div class="spinner"></div><div>Guardando lista...</div></div>
+  </div>
+
+  <div id="s-confirmacion" class="screen">
+    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">¡Lista Guardada!</div><div class="hsub" id="conf-sub"></div></div></div>
+    <div style="flex:1;overflow-y:auto;padding:12px">
+      <div id="conf-lista"></div>
+      <button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
+      <button class="boutline" onclick="cambiarVoto()">🔄 Editar mi lista</button>
     </div>
   </div>
 
-  <!-- GUARDANDO -->
-  <div id="s-guardando" class="screen" style="flex-direction:column">
-    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">Guardando...</div></div></div>
-    <div class="loading"><div class="spinner"></div><div>Registrando tu voto...</div></div>
-  </div>
-
-  <!-- CONFIRMACIÓN -->
-  <div id="s-confirmacion" class="screen" style="flex-direction:column">
-    <div class="header"><div class="hav">🇦🇷</div><div><div class="htitle">¡Voto registrado!</div><div class="hsub" id="conf-sub"></div></div></div>
-    <div style="flex:1;overflow-y:auto;padding:20px 0">
-      <div class="bubble"><div class="bubble-i" id="conf-bubble"></div></div>
-      <div id="conf-lista" style="padding:0 12px"></div>
-      <div style="padding:0 12px;margin-top:4px">
-        <button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
-        <button class="boutline" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- RESULTADOS -->
-  <div id="s-resultados" class="screen" style="flex-direction:column">
-    <div class="header">
-      <button class="bback" onclick="volverDeResultados()">←</button>
-      <div class="hav">🇦🇷</div>
-      <div style="flex:1"><div class="htitle">Resultados globales</div><div class="hsub" id="res-sub"></div></div>
-      <button onclick="recargarVotos(true)" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 8px">↻</button>
-    </div>
+  <div id="s-resultados" class="screen">
+    <div class="header"><button class="bback" onclick="volverDeResultados()">←</button><div style="flex:1"><div class="htitle">Resultados</div><div class="hsub" id="res-sub"></div></div></div>
     <div class="mbar">
-      <button class="mbtn active" id="btn-general" onclick="setModo('general')">📊 Más votados</button>
-      <button class="mbtn" id="btn-categorias" onclick="setModo('categorias')">🗂️ Por puesto</button>
+      <button class="mbtn active" id="btn-general" onclick="setModo('general')">Más votados</button>
+      <button class="mbtn" id="btn-categorias" onclick="setModo('categorias')">Por puesto</button>
     </div>
-    <div class="scroll-area" id="res-contenido"></div>
+    <div style="flex:1;overflow-y:auto" id="res-contenido"></div>
   </div>
 
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Firebase ──────────────────────────────────────────────────────
 const FB = "https://mundial-2026-c9d8d-default-rtdb.firebaseio.com/votos";
-async function apiLeer(){const r=await fetch(FB+".json");if(!r.ok)throw new Error(r.status);const d=await r.json();return d?Object.values(d):[];}
-async function apiGuardar(entry){const k=entry.nombre.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");const r=await fetch(FB+"/"+k+".json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw new Error(r.status);}
-
-// ── Jugadores (convocatorias AFA 2024–2026) ───────────────────────
 const JUGADORES = [
   {id:1,  n:"Emiliano Martínez",     p:"Arquero",   c:"Aston Villa"},
   {id:2,  n:"Gerónimo Rulli",        p:"Arquero",   c:"Olympique de Marsella"},
   {id:3,  n:"Walter Benítez",        p:"Arquero",   c:"Crystal Palace"},
   {id:4,  n:"Juan Musso",            p:"Arquero",   c:"Atlético de Madrid"},
-  {id:5,  n:"Franco Armani",         p:"Arquero",   c:"River Plate"},
   {id:10, n:"Nahuel Molina",         p:"Defensor",  c:"Atlético de Madrid"},
   {id:11, n:"Gonzalo Montiel",       p:"Defensor",  c:"River Plate"},
   {id:12, n:"Cristian Romero",       p:"Defensor",  c:"Tottenham Hotspur"},
@@ -219,104 +172,121 @@ const PUESTOS = ["Arquero","Defensor","Volante","Delantero"];
 const PC = {Arquero:"#FFD700",Defensor:"#4CAF50",Volante:"#2196F3",Delantero:"#F44336"};
 const PE = {Arquero:"🧤",Defensor:"🛡️",Volante:"⚙️",Delantero:"⚽"};
 const JM = Object.fromEntries(JUGADORES.map(j=>[j.id,j]));
-const SK = "arg_mundial_nombre";
 
 let nombre="", seleccion=[], filtroActivo="Todos", modoRes="general", votos=[];
 
-// ── Utils ─────────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),3500);}
-function mostrar(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
+async function apiLeer(){ try{const r=await fetch(FB+".json"); const d=await r.json(); return d?Object.values(d):[];}catch(e){return [];}}
+async function apiGuardar(entry){ const k=entry.nombre.toLowerCase().replace(/[^a-z0-9]/g,""); await fetch(FB+"/"+k+".json",{method:"PUT",body:JSON.stringify(entry)});}
 
-// ── Inicio ────────────────────────────────────────────────────────
+function mostrar(s){ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); document.getElementById('s-'+s).classList.add('active'); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
 async function iniciar(){
-  mostrar('loading');
-  try{votos=await apiLeer();}catch(e){votos=[];toast("⚠️ Sin conexión — modo offline");}
-  const nom=localStorage.getItem(SK);
+  votos = await apiLeer();
+  const nom = localStorage.getItem("arg_nombre");
   if(nom){
-    nombre=nom;
-    const mv=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-    if(mv){seleccion=[...mv.seleccion];renderInicioBienvenida(mv);mostrar('inicio');return;}
+    nombre = nom;
+    const yaVoto = votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
+    if(yaVoto){ seleccion=[...yaVoto.seleccion]; renderInicioBienvenida(yaVoto); mostrar('inicio'); return; }
   }
-  renderInicioNuevo();mostrar('inicio');
+  renderInicioNuevo(); mostrar('inicio');
 }
 
 function renderInicioNuevo(){
-  document.getElementById('inicio-sub').textContent="Armá tu lista de 26";
-  document.getElementById('inicio-bubble').innerHTML=`<span style="font-size:28px">🇦🇷⚽</span><br><br><strong>¡Bienvenido al selector de convocados!</strong><br><br>Elegí tus <strong>26 jugadores</strong> para el Mundial 2026, entre todos los convocados por Scaloni en las fechas FIFA 2024–2026.<br><br>Podés votar cuantas veces quieras; tu última lista reemplaza la anterior.`;
-  document.getElementById('inicio-acciones').innerHTML=`
-    <button class="bverde" onclick="mostrar('nombre')">Votar 🗳️</button>
-    <button class="boutline" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>`;
+  document.getElementById('inicio-bubble').innerHTML = "<b>¡Hola!</b><br>Armá tu lista de 26 para el Mundial.";
+  document.getElementById('inicio-acciones').innerHTML = `<button class="bverde" onclick="mostrar('nombre')">Votar ahora</button>`;
 }
 
-function renderInicioBienvenida(mv){
-  const fecha=new Date(mv.fecha).toLocaleString('es-AR');
-  document.getElementById('inicio-sub').textContent="¡Hola, "+nombre+"!";
-  document.getElementById('inicio-bubble').innerHTML=`<span style="font-size:28px">👋</span><br><br>¡Bienvenido de vuelta, <strong>${nombre}</strong>!<br><br>Ya votaste el <strong>${fecha}</strong> con <strong>${mv.seleccion.length} jugadores</strong>.<br><br>¿Qué querés hacer?`;
-  document.getElementById('inicio-acciones').innerHTML=`
-    <button class="bverde" onclick="mostrar('resultados');renderResultados()">📊 Ver resultados globales</button>
-    <button class="boutline" onclick="verMiLista()">👁️ Ver mi lista actual</button>
-    <button class="boutline" style="margin-top:10px" onclick="cambiarVoto()">🔄 Cambiar mi voto</button>`;
+function renderInicioBienvenida(v){
+  document.getElementById('inicio-bubble').innerHTML = `Hola <b>${nombre}</b>, ya guardamos tu lista.`;
+  document.getElementById('inicio-acciones').innerHTML = `<button class="bverde" onclick="verMiLista()">Ver mi lista</button><button class="boutline" onclick="mostrar('resultados');renderResultados()">Resultados Globales</button>`;
 }
 
-function verMiLista(){renderConfirmacion(false);mostrar('confirmacion');}
-
-function cambiarVoto(){
-  seleccion=[];
-  document.getElementById('sel-titulo').textContent='Elegí tus jugadores';
-  irASeleccion();
-}
-
-function volverDesdeSeleccion(){
-  const mv=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if(mv)renderInicioBienvenida(mv);else renderInicioNuevo();
-  mostrar('inicio');
-}
-
-function volverDeResultados(){
-  const mv=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  if(mv)renderInicioBienvenida(mv);else renderInicioNuevo();
-  mostrar('inicio');
-}
-
-async function recargarVotos(c){
-  if(c)toast("Actualizando...");
-  try{votos=await apiLeer();renderResultados();if(c)toast("✅ Actualizado");}
-  catch(e){if(c)toast("⚠️ Error al actualizar");}
-}
-
-// ── Nombre ────────────────────────────────────────────────────────
-document.getElementById('inp-nombre').addEventListener('input',function(){document.getElementById('btn-empezar').disabled=!this.value.trim();});
-document.getElementById('inp-nombre').addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim())empezar();});
+document.getElementById('inp-nombre').oninput = function(){ document.getElementById('btn-empezar').disabled = !this.value.trim(); };
 
 function empezar(){
-  nombre=document.getElementById('inp-nombre').value.trim();if(!nombre)return;
-  localStorage.setItem(SK,nombre);
-  const prev=votos.find(v=>v.nombre.toLowerCase()===nombre.toLowerCase());
-  seleccion=prev?[...prev.seleccion]:[];
+  nombre = document.getElementById('inp-nombre').value.trim();
+  localStorage.setItem("arg_nombre", nombre);
   irASeleccion();
 }
 
-// ── Selección ─────────────────────────────────────────────────────
 function irASeleccion(){
-  filtroActivo="Todos";
-  document.getElementById('inp-busq').value='';
-  document.getElementById('btn-clear').style.display='none';
-  renderFiltros();
-  renderJugadores();
-  actualizarPie();
-  mostrar('seleccion');
+  renderFiltros(); renderJugadores(); actualizarPie(); mostrar('seleccion');
 }
 
 function renderFiltros(){
-  const conteos={Arquero:0,Defensor:0,Volante:0,Delantero:0};
-  seleccion.forEach(id=>{if(JM[id])conteos[JM[id].p]++;});
-  document.getElementById('sel-sub').textContent=`${seleccion.length} / 26 seleccionados`;
-  document.getElementById('filtros-bar').innerHTML=[
-    `<button class="cbtn ${filtroActivo==='Todos'?'active':''}" onclick="setF('Todos')">🌟 Todos</button>`,
-    ...PUESTOS.map(p=>`<button class="cbtn ${filtroActivo===p?'active':''}" onclick="setF('${p}')">${PE[p]} ${p}s <span style="font-size:11px;opacity:0.8">(${conteos[p]})</span></button>`)
-  ].join('');
+  const html = [`<button class="cbtn ${filtroActivo==='Todos'?'active':''}" onclick="setF('Todos')">Todos</button>`];
+  PUESTOS.forEach(p => {
+    html.push(`<button class="cbtn ${filtroActivo===p?'active':''}" onclick="setF('${p}')">${p}</button>`);
+  });
+  document.getElementById('filtros-bar').innerHTML = html.join('');
 }
 
-function setF(f){filtroActivo=f;renderFiltros();renderJugadores();}
-function filtrarJ(){const v=document.getElementById('inp-busq').value;document.getElementById('btn-clear').style.display=v?'block':'none';if(v)
+function setF(f){ filtroActivo=f; renderFiltros(); renderJugadores(); }
+
+function renderJugadores(){
+  const b = document.getElementById('inp-busq').value.toLowerCase();
+  const list = JUGADORES.filter(j => (filtroActivo==='Todos' || j.p===filtroActivo) && (j.n.toLowerCase().includes(b)));
+  document.getElementById('jlist').innerHTML = list.map(j => `
+    <div class="jitem ${seleccion.includes(j.id)?'sel':''}" onclick="toggleJ(${j.id})">
+      <div class="jav" style="border-color:${PC[j.p]}">${PE[j.p]}</div>
+      <div style="flex:1"><b>${j.n}</b><br><small>${j.c}</small></div>
+      ${seleccion.includes(j.id)?'✅':''}
+    </div>`).join('');
+}
+
+function toggleJ(id){
+  const idx = seleccion.indexOf(id);
+  if(idx > -1) seleccion.splice(idx,1);
+  else if(seleccion.length < 26) seleccion.push(id);
+  else toast("¡Ya elegiste 26!");
+  renderJugadores(); actualizarPie();
+  document.getElementById('sel-sub').textContent = `${seleccion.length} / 26 seleccionados`;
+}
+
+function actualizarPie(){
+  const btn = document.getElementById('btn-confirmar');
+  btn.disabled = seleccion.length !== 26;
+  btn.textContent = seleccion.length === 26 ? "Confirmar Lista" : `Faltan ${26 - seleccion.length}`;
+}
+
+async function confirmar(){
+  mostrar('guardando');
+  await apiGuardar({nombre, seleccion, fecha: new Date().toISOString()});
+  votos = await apiLeer();
+  renderConfirmacion(); mostrar('confirmacion');
+}
+
+function renderConfirmacion(){
+  document.getElementById('conf-sub').textContent = nombre;
+  document.getElementById('conf-lista').innerHTML = seleccion.map(id => {
+    const j = JM[id];
+    return `<div class="conf-jug">${PE[j.p]} ${j.n}</div>`;
+  }).join('');
+}
+
+function renderResultados(){
+  const cont = {};
+  votos.forEach(v => v.seleccion.forEach(id => cont[id] = (cont[id]||0)+1));
+  const ord = JUGADORES.map(j => ({...j, v: cont[j.id]||0})).sort((a,b)=>b.v - a.v);
+  document.getElementById('res-sub').textContent = `${votos.length} listas creadas`;
+  
+  document.getElementById('res-contenido').innerHTML = ord.map((j, i) => {
+    const por = Math.round((j.v / (votos.length||1)) * 100);
+    return `<div class="rjug">
+      <div style="flex:1"><b>${i+1}. ${j.n}</b> (${por}%)
+      <div class="rbar-bg"><div class="rbar-fill" style="width:${por}%; background:${PC[j.p]}"></div></div>
+      </div></div>`;
+  }).join('');
+}
+
+function setModo(m){ modoRes=m; renderResultados(); }
+function verMiLista(){ renderConfirmacion(); mostrar('confirmacion'); }
+function cambiarVoto(){ irASeleccion(); }
+function volverDesdeSeleccion(){ mostrar('inicio'); }
+function volverDeResultados(){ mostrar('inicio'); }
+
+window.onload = iniciar;
+</script>
+</body>
+</html>
